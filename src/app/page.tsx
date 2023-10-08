@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "./Navbar";
 import CodeEditor from "./CodeEditor";
+import GetAssignment from "./GetAssignment";
 
 
 
@@ -19,8 +20,8 @@ export default function Home() {
 					</div>
 					<CodeEditor />
 				</div>
-				<div className="bg-theme1 w-full p-3 flex items-center justify-center">
-					Testcases
+				<div className="bg-theme1 w-full p-3 flex">
+					{/* <GetAssignment /> */}
 				</div>
 				
 			</div>
