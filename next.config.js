@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
-
+const nextConfig = {
+  /* config options here */
+}
+ 
 module.exports = nextConfig
-
 
 // const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 // const withTM = require("next-transpile-modules")([
