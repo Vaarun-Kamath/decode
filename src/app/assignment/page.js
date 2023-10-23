@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import Navbar from '../Navbar'
+import Navbar from '../../components/Navbar'
 
 function TaskDisplay() {
 	const [Tasks, setTasks] = useState(null);
