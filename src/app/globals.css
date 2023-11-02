@@ -25,3 +25,18 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+input[type="text"], input[type="number"], textarea {
+  background-color: grey;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-between; 
+  align-items: flex-start; 
+}
+
+.left-side, .right-side {
+  width: 48%; 
+}
+
