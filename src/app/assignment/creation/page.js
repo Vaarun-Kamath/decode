@@ -1,5 +1,5 @@
 "use client"
-import React from 'react'
+import React, { useEffect } from 'react'
 import Navbar from '@/app/Navbar'
 import { useState } from 'react';
 
@@ -34,51 +34,121 @@ function Tasks() {
 		}
 	}
 
+  const updateTaskId = (event)=>{
+    setTaskId(event.target.value)
+    // console.log(event.target.value)
+  }
+  const updateTaskTitle = (event)=>{
+    setTaskTitle(event.target.value)
+    // console.log(event.target.value)
+  }
+  const updateTaskDescription = (event)=>{
+    setTaskDescription(event.target.value)
+    // console.log(event.target.value)
+  }
+  const updateConstraints = (event)=>{
+    setConstraints(event.target.value)
+    console.log(event.target.value)
+  }
+  const updateNumCases = ()=>{
+    setNumCases(numCases+1)
+  }
+  useEffect(()=>{
+    console.log(numCases)
+  },[numCases])
+  
+
+
   return (
-    <section>
-      
+    <section className='min-h-screen'>
       <Navbar />
+      <div className='flex gap-3 flex-row flex-1'>
+        <div className='flex gap-10 flex-col w-1/2 h-full p-24'>
+          <div className='flex flex-col '>
+            <label>Task ID: </label>
+            <input 
+            className='outline-none p-1 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2'
+            id="taskID" 
+            name="taskID" 
+            onChange={updateTaskId} 
+            placeholder="Mention the TaskID here" 
+            required />
+          </div>
 
-        <form id='taskForm' className="flex-container">
+          <div className='flex flex-col'>
+            <label >Task Title: </label>
+            <input 
+            className='outline-none p-1 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2'
+            id="title" 
+            // name="title" 
+            onChange={updateTaskTitle} 
+            placeholder="Enter the task title here" 
+            required />
+          </div>
 
-          <div className=''>
-            <label for="taskID">Task ID: </label>
-            <input type="number" id="taskID" name="taskID" onChange={} placeholder="Mention the TaskID here" required /><br />
-            <label for="title">Task Title: </label>
-            <input type="text" id="title" name="title" placeholder="Enter the task title here" required /><br></br>
-            <label for="description">Task Description: </label><br></br>
-            <textarea id="description" name="description" rows="4" cols="50" placeholder="Describe the task description here" required></textarea><br></br>
-            <label for="constraints">Constraints:</label><br></br>
-            <textarea id="constraints" name="constraints" rows="4" cols="50" placeholder="Specify the constraints here" required></textarea><br></br>
-            <br></br>
-            <br></br>
-            <input type="submit" value="Submit"></input>
+          <div className='flex flex-col'>
+            <label >Task Description: </label>
+            <textarea 
+            className='outline-none p-1 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2'
+            id="description" 
+            name="description" 
+            onChange={updateTaskDescription} 
+            // rows="4" 
+            // cols="50" 
+            placeholder="Describe the task description here" 
+            required>
+            </textarea>
+          </div>
+
+          <div className='flex flex-col'>
+            <label >Constraints:</label>
+            <textarea 
+            className='outline-none p-1 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2'
+            id="constraints" 
+            name="constraints" 
+            onChange={updateConstraints} 
+            // rows="4" 
+            // cols="50" 
+            placeholder="Specify the constraints here" 
+            required>
+            </textarea>
+          </div>
+          <div className='flex justify-center items-center flex-row gap-3'>
+            <button className='bg-theme3 text-black w-24 p-2 rounded-sm'>Submit</button>
+            <button className='bg-theme4 text-black w-32 p-2 rounded-sm' onClick={updateNumCases}>+ Test Case</button>
           </div>
           
-          <div id="sampleTestCases">
-            <div className="right-side">
-              <h3>Sample Testcases: </h3>
-                <label for="input">Input: </label>
-                <textarea className="input" name="input" rows="4" cols="50" placeholder="Enter the input for testcase here" required></textarea><br></br>
-                <input type="file" accept="image/*" name="inputImage" id="inputImage" />
-                {/* <label for="inputImage">Upload Input Image    </label> */}
-                {/* <button type="button" onclick="document.getElementById('inputImage').click()">Browse</button> */}
-                <br></br>
-                <br></br>
-                <label for="output">Output: </label>
-                <textarea className="output" name="output" rows="4" cols="50" placeholder="Enter the output for testcase here" required></textarea><br></br>
-                <input type="file" accept="image/*" name="outputImage" id="outputImage" />
-                {/* <label for="outputImage">Upload Output Image    </label> */}
-                {/* <button type="button" onclick="document.getElementById('outputImage').click()">Browse</button> */}
-                <br></br>
-                <br></br>
-                <label for="explanation">Explanation: </label>
-                <textarea className="explanation" name="explanation" rows="4" cols="50" placeholder="Enter the explanation of the above testcase here" required></textarea><br></br>
-                <button type="button" id="addTestCase">Add Test Case</button><br></br>
-            </div>
         </div>
-        
-        </form>
+
+        <div className='flex flex-1 h-96 flex-wrap'>
+          <div className="flex flex-col gap-3 border border-theme3 w-1/2 p-4">
+            <div className='flex flex-col'>
+              <label >Input: </label>
+              <textarea 
+              className="outline-none p-1 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2 resize-none" 
+              name="input" 
+              placeholder="Enter the input for testcase here" 
+              required></textarea>
+            </div>
+            <div className='flex flex-col'>
+              <label >Output: </label>
+              <textarea 
+              className="outline-none p-1 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2 resize-none" 
+              name="output" 
+              placeholder="Enter the output for testcase here" 
+              required></textarea>
+            </div>
+            <div className='flex flex-col'>
+              <label >Explaination: </label>
+              <textarea 
+              className="outline-none p-1 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2 resize-none" 
+              name="output" 
+              placeholder="Enter the output for testcase here" 
+              required></textarea>
+            </div>
+          </div>
+        </div>      
+      </div>
         
     </section>
   );
