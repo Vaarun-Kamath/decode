@@ -78,7 +78,7 @@ export default function Task() {
 
 	return (
 		<section className="min-h-screen flex gap-2 flex-col bg-neutral-900 text-theme1 scrollbar">
-			<Navbar />
+			{/* <Navbar /> */}
 			<div className="flex gap-2 flex-row">
 
 				<div className="flex gap-2 flex-col w-1/2 h-full"> {/* LEFT PORTION */}

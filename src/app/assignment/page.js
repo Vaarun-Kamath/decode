@@ -28,7 +28,7 @@ function TaskDisplay() {
 	},[])
 	return (
 		<section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1">
-			<Navbar />
+			{/* <Navbar /> */}
 			<div className='flex-1 min-w-full flex justify-center flex-wrap gap-3'>
 				{Tasks == null?
 					<div className="flex items-center justify-center w-56 h-56 rounded-lg">
