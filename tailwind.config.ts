@@ -25,7 +25,10 @@ const config: Config = {
         'theme4' : '#EEEEEE',
       },
       textColor:{
-        'theme1' : "#EEEEEE",
+        'theme1' : '#1e1f1c',
+        'theme2' : '#393E46',
+        'theme3' : '#FFD369',
+        'theme4' : '#EEEEEE',
       },
     },
   },
