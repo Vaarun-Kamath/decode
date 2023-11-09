@@ -1,12 +1,13 @@
 import Navbar from '@/components/Navbar'
 import React from 'react'
+import Login from '../login/page'
 
 function Home() {
     return (
         <div>
-            <Navbar />
-            Home Page
+        <Login/>
         </div>
+       
     )
 }
 
