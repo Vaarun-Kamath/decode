@@ -1,15 +1,34 @@
+// "use client"
+// import React from 'react'
+// import { useSearchParams  } from "next/navigation";
+// import { useState, useEffect } from 'react';
+
+// function classroom() {
+//     const [classroomId, setClassroomId] = useState(null);
+//     const searchParams = useSearchParams()
+
+//     useEffect(()=>{
+//         setClassroomId(searchParams.get('classroom'))
+//     },[])
+//     return (
+//         <div>{classroomId}</div>
+//     )
+// }
+
+// export default classroom
+
 "use client"
 import React, { useEffect, useState } from 'react'
-import Navbar from '../../components/Navbar'
-import { notFound } from 'next/navigation'
-
-function nowebsite(){
-	return notFound()
-}
+import { useSearchParams  } from "next/navigation";
+import Navbar from '@/components/Navbar';
 
 
+//* use http://localhost:3000/classrooms/assignments?classroom=someID to access this page
 function TaskDisplay() {
 	const [Tasks, setTasks] = useState(null);
+    const [classroomId, setClassroomId] = useState(null); // Use to get all assignments
+    const searchParams = useSearchParams()
+
 	const getTasks = ()=>{
 		return JSON.stringify([{
 			taskID: 'ThisIs2Sum',
@@ -32,6 +51,10 @@ function TaskDisplay() {
 	useEffect(()=>{
 		saveTasks();
 	},[])
+
+    useEffect(()=>{
+        setClassroomId(searchParams.get('classroom'))
+    },[])
 	return (
 		<section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1">
 			<Navbar />
@@ -46,11 +69,11 @@ function TaskDisplay() {
 					:
 					(Tasks.map((task)=>(
 						<div className="max-w-sm p-6 h-80 flex flex-wrap justify-between rounded-md border border-gray-600">
-							<a href="#">
+							<a href={'http://localhost:3000/classrooms/assignments/task?classroom='+classroomId+'&task='+task.taskID}>
 								<h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-theme1">{task.title.substr(0,20)}</h5>
 							</a>
 							<p className="mb-3 font-normal text-gray-700 dark:text-gray-400">{task.description.substr(0,300)}</p>
-							<a href={"http://localhost:3000/assignment/"+task.taskID+"?task="+task.taskID} className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-theme1">
+							<a href={'http://localhost:3000/classrooms/assignments/task?classroom='+classroomId+'&task='+task.taskID} className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-theme1">
 								View Task
 								<svg className="w-3.5 h-3.5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
 									<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
@@ -65,4 +88,4 @@ function TaskDisplay() {
 	)
 }
 
-export default nowebsite
+export default TaskDisplay

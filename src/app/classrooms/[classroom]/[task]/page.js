@@ -1,18 +1,12 @@
 "use client"
 import React from "react";
 import { useEffect, useState } from "react";
-import Navbar from "../../../components/Navbar";
-import CodeEditor from "../../../components/CodeEditor";
+import Navbar from "../../../../components/Navbar";
+import CodeEditor from "../../../../components/CodeEditor";
 import { useSearchParams  } from "next/navigation";
-import { notFound } from 'next/navigation'
 
-export default function websiteilla(){
-	return notFound()
-}
-
-
-//http://localhost:3000/assignment/task1?task=ID is used to access this page, where ID is the ID of the Task
-export function Task() {
+//* http://localhost:3000/classrooms/assignments/task?classroom=CLASSROOMID&task=TASKID is used to access this page, where ID is the ID of the Task
+export default function Task() {
 
     const Gettask = ()=>{
         return JSON.stringify({

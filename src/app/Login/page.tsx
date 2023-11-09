@@ -3,7 +3,7 @@ import LoginButton from '@/components/LoginButton'
 import React from "react";
 
 
-function Login() {
+function login() {
 	return (
 		<section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1">
 			<Navbar />
@@ -15,4 +15,4 @@ function Login() {
 	);
 }
 
-export default Login;
+export default login;
