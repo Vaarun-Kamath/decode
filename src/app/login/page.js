@@ -5,14 +5,17 @@
 
 import { signIn, useSession, signOut } from 'next-auth/react';
 import React from 'react';
+import { FC } from 'react';
 import "../globals.css";
 import { sign } from 'crypto';
+import { useRouter } from 'next/navigation';
 
-const CreateAccountForm: React.FC = () => {
+const CreateAccountForm = () => {
   // const submitregistration = () => {
   //   document.getElementById(<Login/>).style.display = 'block';
   //   document.getElementById('register').style.display = 'none';
   // };
+
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -71,69 +74,50 @@ const CreateAccountForm: React.FC = () => {
 };
 
 
-const Login: React.FC = () => {
+const Login = ()=>{
 
-    const {data: session} = useSession()
-
-  // const handleRegister = () => {
-  //   window.open('about:blank', '_blank');
-  // };
-
-  //const { data: session, status } = useSession();
-
-  // if (status == "authenticated") {
-  //   return (
-  //     <div>
-  //       <button onClick={() => signOut()}>Sign Out</button>
-  //     </div>
-  //   )
-  // }
+  const {data} = useSession();
+  const {push} = useRouter();
 
   const handleCreateAccountClick = () => {
     document.getElementById('create-account-form').style.display = 'block';
     document.getElementById('login-container').style.display = 'none';
   };
 
+  if(data == null || data == undefined){
     return (
-      <section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1">
-        <div className="login-container" id="login-container">
-          <div className="bg-gray-800 rounded-lg p-10">
-            <h1 className="login-text">Login</h1>
+      <section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1" id={"login-container"}>
+        <div className="flex min-h-screen pr-14 pl-14 mr-10 ml-10 justify-end items-center">
+          <div className="bg-gray-800 rounded-lg flex flex-col p-7 h-fit gap-3">
+            <h1 className="text-2xl">Login</h1>
             {/* Username input */}
-            <div className="input-group">
+            <div className="flex flex-col gap-1">
               <label htmlFor="username">Username</label>
-              <input type="text" id="username" name="username" placeholder="Username" />
+              <input className='h-10 p-2 rounded-sm outline-none text-black' type="text" id="username" name="username" placeholder="Username" />
             </div>
   
             {/* Password input */}
-            <div className="input-group">
+            <div className="flex flex-col gap-1">
               <label htmlFor="password">Password</label>
-              <div className="password-input">
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="Password"
+                <input className='h-10 p-2 rounded-sm outline-none text-black' type="password" id="password" name="password" placeholder="Password"
                 />
-              </div>
             </div>
-            <div className="forgot-password">
+            <div className="text-sm">
               <a href="#forgot-password">Forgot Password?</a>
             </div>
-            <br/>
             {/* Submit button */}
-            <button type="submit" className="login-button" onClick={()=> signOut}>Log in</button>
+            <button type="submit" className="bg-neutral-800 p-2 rounded-sm" onClick={()=> signOut}>Log in</button>
   
             {/* Buttons for signing in with GitHub and Google */}
-            <div className="oauth-buttons">
-              <button className="github-button" onClick={() => signIn("github")}>Sign in with GitHub</button>
-              <button className="google-button" onClick={() => signIn("google")}>Sign in with Google</button>
+            <div className="flex flex-row gap-2">
+              <button className="bg-neutral-800 p-2 rounded-sm" onClick={() => signIn("github")}>Sign in with GitHub</button>
+              <button className="bg-neutral-800 p-2 rounded-sm" onClick={() => signIn("google")}>Sign in with Google</button>
             </div>
             <br/>
             {/* Create Account link */}
             <div className="create-account" style={{ display: 'flex', alignItems: "center" }}>
               <h3 style={{ marginRight: '10px', alignContent: "center"}}>Not Registered?</h3>
-              <button onClick={handleCreateAccountClick}>Create Account</button>
+              <button onClick={handleCreateAccountClick} className='text-blue-400'>Create Account</button>
             </div>
           </div>
         </div>
@@ -141,7 +125,11 @@ const Login: React.FC = () => {
         <CreateAccountForm />  
       </section>
     );
+  }else if (data != null || data != undefined){
+    push('/classrooms');
+  }
+  
 };
 
-export const __client = true;
-export default Login; CreateAccountForm;
+// export const __client = true;
+export default Login;

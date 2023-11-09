@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Navbar from './Navbar'
 import { NextAuthProvider } from "./provider.js";
+import { ClientCookiesProvider } from './provider.js';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,15 +18,16 @@ export default function RootLayout({children,}: {
   return (
     <html lang="en">
       <body className={inter.className + ' vsc-initialized'}>
-        <NextAuthProvider>
-          {/* <div className = "max-w-5xl mx-auto px-8"> */}
-            <Navbar />
-            {children}
-            {/* <div className = "pt-16">{children}</div> */}
-          {/* </div> */}
-        </NextAuthProvider>
-      </body>
-      <body className = {inter.className}>
+        {/* <ClientCookiesProvider> */}
+          <NextAuthProvider>
+            {/* <div className = "max-w-5xl mx-auto px-8"> */}
+              {/* <Navbar /> */}
+              {children}
+              {/* <div className = "pt-16">{children}</div> */}
+            {/* </div> */}
+          </NextAuthProvider>
+        {/* </ClientCookiesProvider> */}
+        
       </body>
     </html>
   )
