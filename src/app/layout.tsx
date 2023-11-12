@@ -16,7 +16,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className + ' vsc-initialized'}>
+      <body suppressHydrationWarning={true} className={inter.className + ' vsc-initialized'}>
+        {/* <script src="../path/to/flowbite/dist/flowbite.min.js"></script> */}
         {children}
       </body>
     </html>
