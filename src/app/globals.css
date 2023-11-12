@@ -29,3 +29,28 @@ body {
 html {
   @apply text-white
 }
+
+input[type="text"], input[type="number"], textarea {
+  background-color: grey;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-between; 
+  align-items: flex-start; 
+}
+
+.left-side, .right-side {
+  width: 48%; 
+}
+
+/* For Webkit-based browsers (Chrome, Safari and Opera) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* For IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
