@@ -108,11 +108,11 @@ const CodeEditor = () => {
 	},[outputTextRef])
 
 	return (
-		<>
+		<div className="flex flex-col gap-2">
 			<div className=" bg-theme1 pt-4">
 				<div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
 					<Editor
-						height="83vh"
+						height="48vh"
 						width={`100%`}
 						language={"python"}
 						onChange={handleEditorChange}
@@ -133,7 +133,7 @@ const CodeEditor = () => {
 				<p>Output:</p>
 				<textarea ref={outputTextRef} id="output" disabled placeholder="Output" className="text-theme1 bg-transparent border border-theme2 p-4"/>
 			</div>
-		</>
+		</div>
 	);
 };
 export default CodeEditor;

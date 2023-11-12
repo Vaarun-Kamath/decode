@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect } from 'react'
-import Navbar from '@/app/Navbar'
+import Navbar from '@/components/Navbar'
 import { useState } from 'react';
 
 function Tasks() {
@@ -125,10 +125,11 @@ function Tasks() {
   },[])
   
   return (
-    <section className='min-h-screen flex flex-col gap-3'>
+    <section className='max-h-screen flex flex-col gap-3 overflow-y-auto scrollbar-none'>
       <Navbar />
-      <div className='flex gap-1 flex-row min-h-screen -mt-20 scrollbar scrollbar-thumb-gray-900 scrollbar-track-gray-100'>
-        <div className='flex gap-10 flex-col w-1/2 h-full p-24'>
+      {/* max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-lg scrollbar-thumb-[#FFD369] */}
+      <div className='flex gap-1 flex-row h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-white scrollbar-thumb-rounded-md'>
+        <div className='flex gap-10 flex-col w-1/2 h-fit rounded-md p-16 bg-neutral-800'>
           <div className='flex flex-col '>
             <label>Task ID: </label>
             <input 
@@ -188,7 +189,7 @@ function Tasks() {
           
         </div>
 
-        <div className='flex gap-10 flex-col w-1/2 h-full p-24'>
+        <div className='flex gap-10 flex-col w-1/2 h-full pl-5 pr-5'>
           <div className='w-full grid place-items-center grid-cols-2 gap-5'>
             {
               task == null?(
@@ -200,7 +201,7 @@ function Tasks() {
                 </div>
               ):(
                 task.cases.map((val, i) => (
-                  <div key = {val['id']} className='flex flex-col gap-3 rounded-sm w-full p-4 shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_0px_0px_30px_3px_rgba(25,25,25,0.6)]'>
+                  <div key = {val['id']} className='flex flex-col gap-3 bg-neutral-800 rounded-md w-full p-4 shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_0px_0px_30px_3px_rgba(25,25,25,0.6)]'>
                     <div className='flex flex-col'>
                       <label >Input: </label>
                       <textarea 
@@ -229,8 +230,8 @@ function Tasks() {
                       required></textarea>
                     </div>
                     <div className='flex flex-wrap gap-2'>
-                      <button onClick={event => removetask(event, val['id'])} className='bg-red-600 text-theme1 p-2 rounded-sm w-20'>Remove</button>
-                      <button onClick={event => toggleHidden(event, val['id'])} className={(val['Hidden'] == 1?"bg-slate-600 ":" bg-green-500 ") + 'text-white p-2 rounded-sm w-36'}>{val['Hidden']? "Hidden":"Mark as Hidden"}</button>
+                      <button onClick={event => removetask(event, val['id'])} className='bg-red-500 text-white p-2 rounded-sm w-20'>Remove</button>
+                      <button onClick={event => toggleHidden(event, val['id'])} className={(val['Hidden'] == 1?"bg-slate-600 ":" bg-dark-green-s ") + 'text-white p-2 rounded-sm w-36'}>{val['Hidden']? "Hidden":"Mark as Hidden"}</button>
                     </div>
                   </div>
                 ))

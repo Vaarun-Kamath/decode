@@ -70,9 +70,9 @@ function TaskDisplay() {
 					(Tasks.map((task)=>(
 						<div className="max-w-sm p-6 h-80 flex flex-wrap justify-between rounded-md border border-gray-600">
 							<a href={'http://localhost:3000/classrooms/assignments/task?classroom='+classroomId+'&task='+task.taskID}>
-								<h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-theme1">{task.title.substr(0,20)}</h5>
+								<h5 className="mb-2 text-2xl font-bold tracking-tight text-theme1">{task.title.substr(0,20)}</h5>
 							</a>
-							<p className="mb-3 font-normal text-gray-700 dark:text-gray-400">{task.description.substr(0,300)}</p>
+							<p className="mb-3 font-normal text-theme1 text-opacity-50">{task.description.substr(0,300)}</p>
 							<a href={'http://localhost:3000/classrooms/assignments/task?classroom='+classroomId+'&task='+task.taskID} className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-theme1">
 								View Task
 								<svg className="w-3.5 h-3.5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">

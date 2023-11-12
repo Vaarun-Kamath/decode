@@ -77,17 +77,17 @@ export default function Task() {
 
 
 	return (
-		<section className="min-h-screen flex gap-2 flex-col bg-neutral-900 text-theme1 scrollbar">
+		<section className="max-h-screen flex gap-3 flex-col bg-neutral-900 text-theme1 overflow-y-auto scrollbar-none">
 			<Navbar />
-			<div className="flex gap-2 flex-row">
+			<div className="flex gap-2 flex-row h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-white scrollbar-thumb-rounded-md">
 
 				<div className="flex gap-2 flex-col w-1/2 h-full"> {/* LEFT PORTION */}
 					<CodeEditor />
 				</div>
 
-				<div className="bg-theme1 p-3 flex rounded-md h-full w-1/2"> {/* RIGHT PORTION */}
+				<div className="bg-theme1 p-3 flex rounded-md w-1/2 overflow-y-auto scrollbar-thin scrollbar-thumb-white scrollbar-thumb-rounded-md"> {/* RIGHT PORTION */}
 					{task == null?'Loading...':(
-					<div className="overflow-hidden">
+					<div>
 						<div>
 							<span className="flex flex-col gap-4 justify-center items-center">
 								<h1 className="text-xl">{title}</h1>

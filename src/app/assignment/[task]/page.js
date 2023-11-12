@@ -1,7 +1,7 @@
 "use client"
 import React from "react";
 import { useEffect, useState } from "react";
-import Navbar from "../../Navbar";
+import Navbar from '@/components/Navbar'
 import CodeEditor from "../../CodeEditor";
 import { useSearchParams  } from "next/navigation";
 
