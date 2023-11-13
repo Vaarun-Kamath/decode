@@ -32,7 +32,7 @@ const Login = ()=>{
             {/* Username input */}
             <div className="flex flex-col gap-1">
               <label htmlFor="username">Username</label>
-              <input className='h-10 p-2 rounded-sm outline-none text-black' type="text" id="username" name="username" placeholder="Username" />
+              <input className='h-10 p-2 rounded-sm outline-none text-black' id="username" name="username" placeholder="Username" />
             </div>
   
             {/* Password input */}
@@ -72,19 +72,19 @@ const Login = ()=>{
               {/* SRN input */}
               <div className='flex flex-col'>
                 <label htmlFor="srn">SRN</label>
-                <input onChange={(event)=>{setSrn(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' type="text" id="srn" name="srn" placeholder="Enter your SRN"/>
+                <input onChange={(event)=>{setSrn(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' id="srn" name="srn" placeholder="Enter your SRN"/>
               </div>
         
               {/* First Name input */}
               <div className='flex flex-col'>
                 <label htmlFor="firstName">First Name</label>
-                <input onChange={(event)=>{setFirst(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' type="text" id="firstName" name="firstName" placeholder="Enter your first name" />
+                <input onChange={(event)=>{setFirst(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' id="firstName" name="firstName" placeholder="Enter your first name" />
               </div>
         
               {/* Last Name input */}
               <div className='flex flex-col'>
                 <label htmlFor="lastName">Last Name</label>
-                <input onChange={(event)=>{setLast(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' type="text" id="lastName" name="lastName" placeholder="Enter your last name" />
+                <input onChange={(event)=>{setLast(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' id="lastName" name="lastName" placeholder="Enter your last name" />
               </div>
         
               {/* Email input */}
@@ -102,13 +102,13 @@ const Login = ()=>{
               {/* Section input */}
               <div className='flex flex-col'>
                 <label htmlFor="section">Section</label>
-                <input onChange={(event)=>{setSection(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' type="text" id="section" name="section" placeholder="Enter your section" />
+                <input onChange={(event)=>{setSection(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' id="section" name="section" placeholder="Enter your section" />
               </div>
         
               {/* Semester input */}
               <div className='flex flex-col'>
                 <label htmlFor="semester">Semester</label>
-                <input onChange={(event)=>{setSemester(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' type="text" id="semester" name="semester" placeholder="Enter your semester" />
+                <input onChange={(event)=>{setSemester(event.target.value)}} className='text-black outline-none h-10 rounded-sm p-2' id="semester" name="semester" placeholder="Enter your semester" />
               </div>
         
               {/* Submit button */}

@@ -16,7 +16,7 @@ export default function RootLayout({children,}: {
 }) {
   return (
     <html lang="en">
-      <body className={inter.className + ' vsc-initialized'}>
+      <body suppressHydrationWarning={true} className={inter.className + ' vsc-initialized'}>
         <NextAuthProvider>
           {children}
         </NextAuthProvider>
