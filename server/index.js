@@ -1,38 +1,32 @@
 const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
+const { exec } = require('child_process');
+const { randomUUID } = require('crypto');
+const bcrypt = require('bcryptjs');
 
-const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'DBMS',
-    password: 'Kabir@123',
-    database: 'sendit',
-    connectionLimit: 10
-})
 
 const PORT = 4000
-
 const app = express();
-
-function logger(req, res, next){
-    console.log(`[${Date.now()}] ${req.method} ${req.url}`)
-    next();
-}
 
 app.use(logger);
 app.use(bodyParser.json());
 
-app.get('/test',(req,res)=>{
-    pool.query('select * from submission as s join assignment as t where s.task_id = t.task_id', (err, result, fields)=>{
-        if(err){
-            return console.log(err);
-        }
-        console.log(result);
-    })
-    res.json({status: true})
+require('dotenv').config({path: "../.env"});
+
+const cors = require("cors");
+app.use(cors());
+
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: process.env.DATABASE_USER,
+    database: process.env.DATABASE_NAME,
+    password: process.env.DATABASE_PASSWORD,
+    waitForConnections: true,
+    connectionLimit: 10,
+    idleTimeout: 60000,
+    queueLimit: 0
 });
-
-
 
 //! ############################################ ID GENERATION FORMULA ########################################
 
@@ -50,155 +44,158 @@ app.get('/test',(req,res)=>{
 
 //! ############################################ ID GENERATION FORMULA ########################################
 
+function logger(req, res, next){
+    console.log(`[${Date.now()}] ${req.method} ${req.url}`)
+    next();
+}
 
-app.post('/api/create-new-student',(req,res)=>{
+function executeQuery(query) {
+    return new Promise((resolve, reject) => {
+        pool.query(query, (err, result) => {
+            if (err) {
+                reject({ success: false, error: err });
+            } else {
+                resolve({ success: true, data: result });
+            }
+        });
+    });
+}
+async function handleServerError(res) {
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
+}
+
+async function handleNotFound(res) {
+    res.status(404).json({ success: false, error: 'Not found' });
+}
+
+async function handleBadRequest(res) {
+    res.status(400).json({ success: false, error: 'Bad Request' });
+}
+
+async function handleUnauthorized(res) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+}
+
+async function handleNormalLogin(password, user, res, results) {
+    const passwordMatch = await bcrypt.compare(password, user.Password);
+    
+    if (passwordMatch) {
+        res.json(results);
+    } else {
+        handleUnauthorized(res);
+    }
+}
+
+app.post('/api/studentExists', async (req, res) => {
+    const query = `SELECT Email,Password FROM student WHERE Email = '${req.body.email}' LIMIT 1;`;
+
+    try {
+        const resultsJSON = await executeQuery(query);
+        if (resultsJSON["success"] == false) {
+            handleServerError(res);
+        }
+
+        const results = resultsJSON["data"];
+        const user = results[0];
+
+        if (results.length < 1) {
+            handleNotFound(res);
+        }
+
+        if (req.body.loginMethod == "Normal") {
+            handleNormalLogin(req.body.password, user, res, results);
+        } else if (req.body.loginMethod == "NextAuth") {
+            res.json(results);
+        } else {
+            handleBadRequest(res);
+        }
+
+    } catch (error) {
+        console.error('Error in /api/studentExists endpoint:', error);
+        handleServerError(res);
+    }
+});
+
+
+app.post('/api/create-new-student', async (req,res)=>{
     // SRN, First name, Last name, Email, Password, Section, Semester
-    pool.query(
-    `insert into student values('${req.body.srn}', '${req.body.fname}', '${req.body.lname}', '${req.body.email}', '${req.body.password}', '${req.body.section}', ${req.body.semester});`, 
-        (err, result, fields)=>{
-            if(err){
-                res.json({status: 'error', message: err});
-                console.log(err);
-                return console.log("Error inserting student")
-            }
-            res.json({status: `Created New User ${req.body.srn}`})
-            // console.log(result);
-        }
-    )
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const query = `INSERT INTO student VALUES('${req.body.srn}', '${req.body.first}', '${req.body.last}', '${req.body.email}', '${hashedPassword}', '${req.body.section}', ${req.body.semester});`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-student endpoint:", error);
+        handleServerError(res);
+    }
 });
 
-app.post('/api/create-new-teacher',(req,res)=>{
+app.post('/api/create-new-teacher', async (req,res)=>{
     // tid, First name, Last name, Email, Password
-    pool.query(
-    `insert into teacher values('${req.body.tid}', '${req.body.fname}', '${req.body.lname}', '${req.body.email}', '${req.body.password}');`, 
-        (err, result, fields)=>{
-            if(err){
-                res.json({status: 'error', message: err});
-                console.log(err);
-                return console.log("Error inserting teacher")
-            }
-            res.json({status: `Created New Teacher ${req.body.tid}`})
-            // console.log(result);
-        }
-    )
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const query = `INSERT INTO teacher VALUES('${req.body.tid}', '${req.body.fname}', '${req.body.lname}', '${req.body.email}', '${hashedPassword}');`;
+    
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-teacher endpoint:", error);
+        handleServerError(res);
+    }
 });
 
-// problemStatement = {
-//      "title": "Two Sum",
-//      "description": `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
-//                      You may assume that each input would have exactly one solution, and you may not use the same element twice.
-//                      You can return the answer in any order.`,
-//      "constraints": [
-//          "2 <= nums.length <= 10^4",
-//          "-10^9 <= nums[i] <= 10^9",
-//          "-10^9 <= target <= 10^9",
-//      ]
-// }
-
-// sampleInputOutput = {
-//         testcase:[
-//              {
-//                  Input: "nums = [2,7,11,15], target = 9",
-//                  Output: "[0,1]",
-//                  Explaination: "Because nums[0] + nums[1] == 9, we return [0, 1]."
-//              },
-//              {
-//                  Input: "nums = [3,2,4], target = 6",
-//                  Output: "[1,2]",
-//                  Explaination: "None"
-//              },
-//              {
-//                  Input: "nums = [2,7,11,15], target = 9",
-//                  Output: "[0,1]",
-//                  Explaination: "None"
-//              },
-//         ]
-// }
-
-app.post('/api/create-new-task',(req,res)=>{
+app.post('/api/create-new-task', async (req,res)=>{
     // taskId, problemStatement, sampleInputOutput, marks
-    pool.query(
-    `insert into task values('${req.body.taskID}', '${JSON.stringify(req.body.problemStatement)}', '${JSON.stringify(req.body.sampleInputOutput)}', ${req.body.marks});`, 
-        (err, result, fields)=>{
-            if(err){
-                res.json({status: 'error', message: err});
-                console.log(err);
-                return console.log("Error inserting task")
-            }
-            res.json({status: `Created New Task ${req.body.taskID}`})
-            // console.log(result);
-        }
-    )
+    const query = `INSERT INTO task VALUES('${req.body.taskID}', '${JSON.stringify(req.body.problemStatement)}', '${JSON.stringify(req.body.sampleInputOutput)}', ${req.body.marks});`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-task endpoint:", error);
+        handleServerError(res);
+    }
 });
 
 
-app.post('/api/create-new-classroom',(req,res)=>{
-    // classroomID, section, name, semester, subject, teacherId
-    pool.query(
-    `insert into classroom values(${req.body.classroomID}, '${req.body.section}', '${req.body.name}', ${req.body.semester}, '${req.body.subject}', '${req.body.teacherId}');`, 
-        (err, result, fields)=>{
-            if(err){
-                res.json({status: 'error', message: err});
-                console.log(err);
-                return console.log("Error inserting classroom")
-            }
-            res.json({status: `Created New Classroom ${req.body.classroomID}`})
-            // console.log(result);
-        }
-    )
+app.post('/api/create-new-classroom', async (req,res)=>{
+    const query = `INSERT INTO classroom(section, name, semester, subject, teacher_id) VALUES('${req.body.section}', '${req.body.name}', ${req.body.semester}, '${req.body.subject}', '${req.body.teacherId}');`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-classroom endpoint:", error);
+        handleServerError(res);
+    }
 });
 
 
-app.post('/api/create-new-assignment',(req,res)=>{
-    // assignmentID, deadline, taskId, teacherID, classroomID
-    pool.query(
-    `insert into assignment values(${req.body.assignmentID}, '${req.body.deadline}', ${req.body.taskId}, '${req.body.teacherID}', ${req.body.classroomID});`, 
-        (err, result, fields)=>{
-            if(err){
-                res.json({status: 'error', message: err});
-                console.log(err);
-                return console.log("Error inserting assignment")
-            }
-            res.json({status: `Created New Assignment ${req.body.assignmentID}`})
-            // console.log(result);
-        }
-    )
+app.post('/api/create-new-assignment', async (req,res)=>{
+    const query = `INSERT INTO assignment VALUES(${req.body.assignmentID}, '${req.body.deadline}', ${req.body.taskId}, '${req.body.teacherID}', ${req.body.classroomID});`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-assignment endpoint:", error);
+        handleServerError(res);
+    }
 });
 
 
-app.post('/api/create-new-submission',(req,res)=>{
-    // submissionID, submissionDate, content, plagiarismReport, marks, taskID, srn
-    pool.query(
-    `insert into submission values(${req.body.submissionID}, '${req.body.submissionDate}', '${req.body.content}', ${req.body.plagiarismReport}, ${req.body.marks}, ${req.body.taskID}, '${req.body.srn}');`, 
-        (err, result, fields)=>{
-            if(err){
-                res.json({status: 'error', message: err});
-                console.log(err);
-                return console.log("Error inserting submission")
-            }
-            res.json({status: `Created New Submission ${req.body.submissionID}`})
-            // console.log(result);
-        }
-    )
+app.post('/api/create-new-submission', async (req,res)=>{
+    const query = `INSERT INTO submission(submission_date, content, plagiarism_report, marks, task_id, srn) VALUES ('${req.body.submissionDate}', '${req.body.content}', ${req.body.plagiarismReport}, ${req.body.marks}, ${req.body.taskID}, '${req.body.srn}');`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-submission endpoint:", error);
+        handleServerError(res);
+    }
 });
-
-app.post('/api/get-student',(req,res)=>{
-    // studentId, 
-    pool.query(
-    `insert into submission values(${req.body.submissionID}, '${req.body.submissionDate}', '${req.body.content}', ${req.body.plagiarismReport}, ${req.body.marks}, ${req.body.taskID}, '${req.body.srn}');`, 
-        (err, result, fields)=>{
-            if(err){
-                res.json({status: 'error', message: err});
-                console.log(err);
-                return console.log("Error inserting submission")
-            }
-            res.json({status: `Created New Submission ${req.body.submissionID}`})
-            // console.log(result);
-        }
-    )
-});
-
-
 
 app.listen(PORT, ()=>{
     console.log(`SendIt Server started on port: ${PORT}`);
