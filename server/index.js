@@ -87,12 +87,13 @@ async function handleNormalLogin(password, user, res, results) {
 }
 
 app.post('/api/studentExists', async (req, res) => {
-    const query = `SELECT Email,Password FROM student WHERE Email = '${req.body.email}' LIMIT 1;`;
+    const query = `SELECT Email, FirstName, Password FROM student WHERE Email = '${req.body.email}' LIMIT 1;`;
 
     try {
         const resultsJSON = await executeQuery(query);
         if (resultsJSON["success"] == false) {
             handleServerError(res);
+            return;
         }
 
         const results = resultsJSON["data"];
@@ -100,6 +101,7 @@ app.post('/api/studentExists', async (req, res) => {
 
         if (results.length < 1) {
             handleNotFound(res);
+            return;
         }
 
         if (req.body.loginMethod == "Normal") {
@@ -193,6 +195,57 @@ app.post('/api/create-new-submission', async (req,res)=>{
         res.json(results);
     } catch (error) {
         console.error("Error in /api/create-new-submission endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+app.post('/api/student-join-classroom', async (req,res)=>{
+    const query = `INSERT INTO student_in_classroom VALUES ('${req.body.SRN}', '${req.body.classroomID}');`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/student-join-classroom endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+app.post('/api/get-classrooms-for-student', async (req,res)=>{
+
+    const SRNQuery = `SELECT get_SRN_from_email('${req.body.email}') AS SRN;`;  
+    try {
+        
+        const SRNResults = await executeQuery(SRNQuery);
+        if(SRNResults["success"] == false){
+            handleServerError(res);
+            return;
+        }
+        
+        if(SRNResults["data"].length < 1){
+            handleNotFound(res);
+            return;
+        }
+
+        var SRN = SRNResults["data"][0]["SRN"];
+        const query = `SELECT classroom_id AS classroomId, section, name, semester, subject, CONCAT(t.first_name, ' ', t.last_name) AS teacher FROM classroom c JOIN student_in_classroom sic on c.classroom_id = sic.ClassroomID JOIN teacher t ON t.teacher_id = c.teacher_id where sic.srn = '${SRN}';`;
+
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-submission endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+app.get('/api/get-srn', async (req,res)=>{
+    const query = `SELECT get_SRN_from_email('${req.body.email}') AS SRN;`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/get-srn endpoint:", error);
         handleServerError(res);
     }
 });

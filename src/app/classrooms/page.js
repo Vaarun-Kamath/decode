@@ -2,36 +2,49 @@
 import React from 'react'
 import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 // posts -> assignments
 
 export default function Classrooms() {
 
+	const {data} = useSession();
 	const [classrooms, setClassrooms] = useState(null);
-	const getClassrooms = ()=>{
-		return JSON.stringify([{
-			classroomId: 3,
-			section: 'J',
-            name: `Big Data Classroom`,
-			semester: 5,
-			subject: 'Big Data',
-			teacher: 'FN LN'
-		},{
-			classroomId: 5,
-			section: 'G',
-            name: `MI Classroom`,
-			semester: 5,
-			subject: 'Machine Intelligence',
-			teacher: 'some name'
-		}])
-	}
+	
+	const getClassrooms = async () => {
+		try {
+			const response = await fetch('http://localhost:4000/api/get-classrooms-for-student', {
+				method: 'POST',
+				headers: {
+				'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					email: data.user.email,
+				}),
+			});
+			if (!response.ok) {
+				console.log("Error fetching classrooms. Please try again later.");
+			} else {
+				const results = await response.json();
+				return results;
+			}
+		} catch (error) {
+			console.error('Error fetching data:', error);
+			return null;
+		}
+	};
 
-	const saveClassrooms = ()=>{
-		const data = getClassrooms();
-		setClassrooms(JSON.parse(data))
+	const saveClassrooms = async () => {
+		if (data) {
+			const classroomData = await getClassrooms();
+			console.log('DATA: ', classroomData);
+			if (classroomData) {
+			  setClassrooms(classroomData["data"]);
+			}
+		  }
 	}
 	useEffect(()=>{
 		saveClassrooms();
-	},[])
+	},[data])
 
 	return (
 		<section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1">

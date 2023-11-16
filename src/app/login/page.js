@@ -12,8 +12,9 @@ import { useRouter } from 'next/navigation';
 
 const Login = ()=>{
 
-  const {data} = useSession();
+  var {data} = useSession();
   const {push} = useRouter();
+  var userInDb = false
 
   const [srn, setSrn] = useState();
   const [first, setFirst] = useState();
@@ -23,29 +24,137 @@ const Login = ()=>{
   const [section, setSection] = useState();
   const [semester, setSemester] = useState();
 
+  const submitRegistration = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/create-new-student', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          srn,
+          first,
+          last,
+          email,
+          password,
+          section,
+          semester,
+        }),
+      });
+  
+      if (response.ok) {
+        console.log('Registration successful', data);
+        push('/classrooms');
+      } else {
+        console.error('Registration failed');
+        // Handle failure
+        alert("Registration failed. Please try again later.")
+      }
+    } catch (error) {
+      console.error('Error submitting registration:', error);
+      // Handle failure
+      alert("An error occurred. Please try again later.")
+    }
+  };  
+
+  const loginWithMail = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/studentExists', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          loginMethod: "Normal",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result && result.length > 0) {
+        // User exists in the database, redirect to the appropriate page
+        // Add first name and email to data object
+        data = {
+          ...data,
+          name: result[0].FirstName,
+          email: result[0].email,
+        }
+        push('/classrooms');
+        // userInDb = true
+      } else {
+        // User does not exist, show additional details form
+        // You can set a flag or state here to conditionally render the form
+        userInDb = false
+        alert("Invalid email or password. Please try again.")
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+      // Handle failure
+      alert("An error occurred. Please try again later.")
+    }
+  };
+
+  useEffect(() => {
+    const checkUserInDatabase = async () => {
+      if (data) {
+        const response = await fetch('http://localhost:4000/api/studentExists', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            undefined,
+            loginMethod: "NextAuth",
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          // User exists in the database, redirect to the appropriate page
+          // push('/classrooms');
+          userInDb = true
+        } else {
+          userInDb = false
+          // User does not exist, show additional details form
+          // You can set a flag or state here to conditionally render the form
+        }
+      }
+    };
+
+    checkUserInDatabase();
+  }, [data]);
+
+  // if (!data) {
+  //   return <div>Loading...</div>;
+  // }
+
   if(data == null || data == undefined){
     return (
       <section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1" id={"login-container"}>
         <div className="flex min-h-screen pr-14 pl-14 mr-10 ml-10 justify-end items-center">
           <div className="bg-gray-800 rounded-lg flex flex-col p-7 h-fit gap-3">
             <h1 className="text-2xl">Login</h1>
-            {/* Username input */}
+            {/* Email input */}
             <div className="flex flex-col gap-1">
-              <label htmlFor="username">Username</label>
-              <input className='h-10 p-2 rounded-sm outline-none text-black' id="username" name="username" placeholder="Username" />
+              <label htmlFor="email">Email</label>
+              <input onChange={(event)=>{setEmail(event.target.value)}} className='h-10 p-2 rounded-sm outline-none text-black' id="email" name="email" placeholder="email" />
             </div>
   
             {/* Password input */}
             <div className="flex flex-col gap-1">
               <label htmlFor="password">Password</label>
-                <input className='h-10 p-2 rounded-sm outline-none text-black' type="password" id="password" name="password" placeholder="Password"
+                <input onChange={(event)=>{setPassword(event.target.value)}} className='h-10 p-2 rounded-sm outline-none text-black' type="password" id="password" name="password" placeholder="Password"
                 />
             </div>
             <div className="text-sm">
               <a href="#forgot-password">Forgot Password?</a>
             </div>
             {/* Submit button */}
-            <button type="submit" className="bg-neutral-800 p-2 rounded-sm" onClick={()=> signOut}>Log in</button>
+            <button type="submit" className="bg-neutral-800 p-2 rounded-sm" onClick={loginWithMail}>Log in</button>
   
             {/* Buttons for signing in with GitHub and Google */}
             <div className="flex flex-row gap-2">
@@ -60,8 +169,13 @@ const Login = ()=>{
       </section>
     );
   }else if (data != null || data != undefined){
-    const userInDb = true // Get user from sql
+    // console.log(data);
+     // Get user from sql
+    console.log("ORANGE", data)
+    // console.log("APPLE", studentExists);
+    
     if(userInDb){
+      console.log("User exists in database", data);
       push('/classrooms');
     }else{
       return (
@@ -112,7 +226,7 @@ const Login = ()=>{
               </div>
         
               {/* Submit button */}
-              <button className='bg-yellow-400 text-black rounded-sm h-10' type="submit" /*onClick={submitregistration}*/>Create Account</button>
+              <button className='bg-yellow-400 text-black rounded-sm h-10' type="submit" onClick={submitRegistration}>Create Account</button>
             </div>
           </div>
         </div>
