@@ -36,7 +36,7 @@ export default function Classrooms() {
 	const saveClassrooms = async () => {
 		if (data) {
 			const classroomData = await getClassrooms();
-			console.log('DATA: ', classroomData);
+			// console.log('DATA: ', classroomData);
 			if (classroomData) {
 			  setClassrooms(classroomData["data"]);
 			}

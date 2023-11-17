@@ -3,8 +3,11 @@
 import React from 'react'
 import {signIn, useSession, signOut} from 'next-auth/react'
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 function ProfileIcon() {
+
+    const {push} = useRouter();
 
     const {data: session, status } = useSession();
     
@@ -17,7 +20,7 @@ function ProfileIcon() {
         )
     }
 
-    return <button className='z-10' onClick={()=> signIn('github')}>Sign In</button>
+    return <button className='z-10' onClick={push('/login')}>Sign In</button>
 }
 
 export default ProfileIcon

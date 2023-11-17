@@ -13,8 +13,9 @@ import { useRouter } from 'next/navigation';
 const Login = ()=>{
 
   var {data} = useSession();
+  // var data = null;
   const {push} = useRouter();
-  var userInDb = false
+  // var userInDb = false
 
   const [srn, setSrn] = useState();
   const [first, setFirst] = useState();
@@ -23,6 +24,7 @@ const Login = ()=>{
   const [password, setPassword] = useState();
   const [section, setSection] = useState();
   const [semester, setSemester] = useState();
+  const [userInDb,setUserInDb] = useState(false);
 
   const submitRegistration = async () => {
     try {
@@ -81,12 +83,13 @@ const Login = ()=>{
           name: result[0].FirstName,
           email: result[0].email,
         }
+        console.log("DATA:::::",data)
         push('/classrooms');
         // userInDb = true
       } else {
         // User does not exist, show additional details form
         // You can set a flag or state here to conditionally render the form
-        userInDb = false
+        setUserInDb(false);
         alert("Invalid email or password. Please try again.")
       }
     } catch (error) {
@@ -105,28 +108,39 @@ const Login = ()=>{
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            email,
-            undefined,
+            email:data.user.email,
+            password:undefined,
             loginMethod: "NextAuth",
           }),
         });
 
         const result = await response.json();
 
+        console.log("RES:L ", result)
+
         if (result && result.length > 0) {
           // User exists in the database, redirect to the appropriate page
           // push('/classrooms');
-          userInDb = true
+          console.log("SETTING TO TRUE")
+          setUserInDb(true)
+          // userInDb = true
         } else {
-          userInDb = false
+          console.log("SETTING TO FALSE")
+          setUserInDb(false)
+          // userInDb = false
           // User does not exist, show additional details form
           // You can set a flag or state here to conditionally render the form
         }
+        console.log(" :: ",userInDb);
       }
     };
 
     checkUserInDatabase();
   }, [data]);
+
+  useEffect(()=>{
+    console.log("USER CHANGED")
+  },[userInDb])
 
   // if (!data) {
   //   return <div>Loading...</div>;
