@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect } from 'react'
-import Navbar from '@/components/Navbar'
+import Navbar from '@/components/Navbar';
 import { useState } from 'react';
 import 'flowbite';
 
