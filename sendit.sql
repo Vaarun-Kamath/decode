@@ -14,10 +14,11 @@ CREATE TABLE `sendit`.`student` (
 
 CREATE TABLE `sendit`.`task` (
   `task_id` INT NOT NULL,
+  `assignment_id` INT NOT NULL,
   `questions` JSON NOT NULL,
   `solutions` JSON NOT NULL,
   `task_marks` INT NOT NULL,
-  PRIMARY KEY (`task_id`));
+  PRIMARY KEY (`task_id`, `assignment_id`));
 
   CREATE TABLE `sendit`.`submission` (
   `submissionID` INT NOT NULL AUTO_INCREMENT,
@@ -41,6 +42,7 @@ CREATE TABLE `sendit`.`task` (
 
   CREATE TABLE `sendit`.`classroom` (
   `classroom_id` INT NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(8) UNIQUE,
   `section` CHAR(1) NULL,
   `name` VARCHAR(50) NOT NULL,
   `semester` INT NULL,
@@ -52,12 +54,11 @@ CREATE TABLE `sendit`.`task` (
 
 CREATE TABLE `sendit`.`assignment` (
   `assignment_id` INT NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
   `deadline` DATETIME NOT NULL,
-  `task_id` INT NOT NULL,
   `teacher_id` VARCHAR(15) NOT NULL,
   `classroom_id` INT NOT NULL,
-  PRIMARY KEY (`assignment_id`,`task_id`),
-  FOREIGN KEY (task_id) REFERENCES `sendit`.`task` (task_id),
+  PRIMARY KEY (`assignment_id`),
   FOREIGN KEY (classroom_id) REFERENCES `sendit`.`classroom` (classroom_id),
   FOREIGN KEY (teacher_id) REFERENCES `sendit`.`teacher` (teacher_id));
 
@@ -90,20 +91,62 @@ BEGIN
 END $$
 DELIMITER ;
 
-select * from student;
+ALTER TABLE task ADD FOREIGN KEY (assignment_id) REFERENCES `sendit`.`assignment` (assignment_id);
 
-update student set email = "mail.varunkamath@gmail.com";
+DELIMITER $$
+CREATE FUNCTION right_rotate(input_string VARCHAR(8), positions INT)
+RETURNS VARCHAR(8) DETERMINISTIC
+BEGIN
+    DECLARE rotated_string VARCHAR(8);
+    SET rotated_string = CONCAT(SUBSTRING(input_string, positions+1), SUBSTRING(input_string, 1, positions));
 
+    RETURN rotated_string;
+END $$
+DELIMITER ;
 
+DELIMITER $$
+CREATE FUNCTION generate_code()
+RETURNS VARCHAR(10) DETERMINISTIC
+BEGIN
+    DECLARE random_number INT;
+    DECLARE code_string VARCHAR(10);
+    DECLARE code_exists INT;
+    DECLARE max_counter INT;
+    
+    SET max_counter = 30; -- Maximum iterations to check for collisions in classroom code.
+    
+    REPEAT
 
+		SET random_number = FLOOR(RAND() * 100000);
+		SET random_number = CAST(random_number AS CHAR CHARACTER SET utf8mb4);
+		SET code_string = LPAD(random_number, 8, '0');
+		SET code_string = right_rotate(code_string, 6);
+		SET random_number = CAST(code_string AS UNSIGNED);
+		SET code_string = CONV(random_number, 10, 34);
+		SET code_string = REPLACE(REPLACE(code_string, '0', 'y'), '1', 'z');
+		SET code_string = UPPER(code_string);
+        
+        -- Decrement max counter
+        SET max_counter = max_counter - 1;
+        
+        -- Check if code exists
+        SELECT COUNT(*) INTO code_exists FROM classroom WHERE code = code_string;
+        
+	UNTIL code_exists = 0 OR max_counter = 0 END REPEAT;
 
+    RETURN code_string;
+END $$
+DELIMITER ;
 
-
-
-
-
-
-
+DELIMITER $$
+CREATE TRIGGER generate_class_room_code
+BEFORE INSERT
+ON classroom
+FOR EACH ROW
+BEGIN
+    SET NEW.code = IFNULL(NEW.code, generate_code());
+END $$
+DELIMITER ;
 
 
 
