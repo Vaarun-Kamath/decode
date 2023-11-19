@@ -87,7 +87,7 @@ async function handleNormalLogin(password, user, res, results) {
 }
 
 app.post('/api/studentExists', async (req, res) => {
-    const query = `SELECT Email, FirstName, Password FROM student WHERE Email = '${req.body.email}' LIMIT 1;`;
+    const query = `SELECT email, first_name, password FROM student WHERE email = '${req.body.email}' LIMIT 1;`;
     try {
         const resultsJSON = await executeQuery(query);
         if (resultsJSON["success"] == false) {
@@ -148,9 +148,25 @@ app.post('/api/create-new-teacher', async (req,res)=>{
 
 app.post('/api/create-new-task', async (req,res)=>{
     // taskId, problemStatement, sampleInputOutput, marks
-    const query = `INSERT INTO task VALUES('${req.body.taskID}', '${JSON.stringify(req.body.problemStatement)}', '${JSON.stringify(req.body.sampleInputOutput)}', ${req.body.marks});`;
+    const assignmentIDQuery = `SELECT assignment_id AS assignId FROM assignment WHERE name = '${req.body.assignmentName}' LIMIT 1;`;
 
+    
     try {
+        const IDresults = await executeQuery(assignmentIDQuery);
+
+        if(IDresults["success"] == false){
+            handleServerError(res);
+            return;
+        }
+        
+        if(IDresults["data"].length < 1){
+            handleNotFound(res);
+            return;
+        }
+
+        const ID = IDresults["data"][0]["assignId"];
+        const query = `INSERT INTO task VALUES('${req.body.taskID}', '${ID}', '${JSON.stringify(req.body.problemStatement)}', '${JSON.stringify(req.body.sampleInputOutput)}', ${req.body.marks});`;
+        
         const results = await executeQuery(query);
         res.json(results);
     } catch (error) {
@@ -158,6 +174,18 @@ app.post('/api/create-new-task', async (req,res)=>{
         handleServerError(res);
     }
 });
+
+// app.post('/api/create-new-testcase', async (req,res)=>{
+//     const query = `INSERT INTO testcase VALUES(${req.body.testcaseId}, ${req.body.taskId}, '${req.body.input}', '${req.body.output}', '${req.body.explanation}', ${req.body.hidden});`;
+
+//     try {
+//         const results = await executeQuery(query);
+//         res.json(results);
+//     } catch (error) {
+//         console.error("Error in /api/create-new-testcase endpoint:", error);
+//         handleServerError(res);
+//     }
+// });
 
 app.post('/api/create-new-classroom', async (req,res)=>{
     const query = `INSERT INTO classroom(section, name, semester, subject, teacher_id) VALUES('${req.body.section}', '${req.body.name}', ${req.body.semester}, '${req.body.subject}', '${req.body.teacherId}');`;
@@ -305,6 +333,30 @@ app.get('/api/get-assignments-for-classroom', async (req,res)=>{
     }
 });
 
+app.post('/api/get-assignments-for-classroom', async (req,res)=>{
+    const query = `SELECT name, deadline, teacher_id FROM assignment WHERE classroom_id = ${req.body.classId};`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/get-assignments-for-classroom endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+app.post('/api/get-tasks-for-assignment', async (req,res)=>{
+    const query = `SELECT questions, solutions, task_marks FROM task WHERE assignment_id = ${req.body.assignmentId};`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/get-tasks-for-assignment endpoint:", error);
+        handleServerError(res);
+    }
+});
+
 app.post('/api/check-class-code', async (req,res)=>{
     const query = `SELECT * FROM classroom WHERE code = '${req.body.classroomCode}' LIMIT 1;`;
 
@@ -313,6 +365,18 @@ app.post('/api/check-class-code', async (req,res)=>{
         res.json(results);
     } catch (error) {
         console.error("Error in /api/check-class-code endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+app.post('/api/get-task', async (req,res)=>{
+    const query = `SELECT * FROM task WHERE task_id = '${req.body.taskID}' LIMIT 1;`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/get-task endpoint:", error);
         handleServerError(res);
     }
 });

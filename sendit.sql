@@ -4,21 +4,30 @@
  
 CREATE TABLE `sendit`.`student` (
   `SRN` VARCHAR(15) NOT NULL,
-  `FirstName` VARCHAR(20) NOT NULL,
-  `LastName` VARCHAR(20),
-  `Email` VARCHAR(50) NOT NULL,
-  `Password` VARCHAR(100) NOT NULL,
-  `Section` CHAR NOT NULL,
-  `Semester` INT NOT NULL,
+  `first_name` VARCHAR(20) NOT NULL,
+  `last_name` VARCHAR(20),
+  `email` VARCHAR(50) NOT NULL,
+  `password` VARCHAR(100) NOT NULL,
+  `section` CHAR NOT NULL,
+  `semester` INT NOT NULL,
   PRIMARY KEY (`SRN`));
 
+-- CREATE TABLE `sendit`.`testcase` (
+--   `testcase_id` INT NOT NULL,
+--   `task_id` INT NOT NULL,
+--   `input` VARCHAR(50) NOT NULL,
+--   `output` VARCHAR(50) NOT NULL,
+--   `explanation` VARCHAR(100) NOT NULL,
+--   `hidden` INT NOT NULL DEFAULT 0,
+-- PRIMARY KEY (`testcase_id`, `task_id`));
+
 CREATE TABLE `sendit`.`task` (
-  `task_id` INT NOT NULL,
+  `task_id` VARCHAR(30) NOT NULL,
   `assignment_id` INT NOT NULL,
   `questions` JSON NOT NULL,
   `solutions` JSON NOT NULL,
   `task_marks` INT NOT NULL,
-  PRIMARY KEY (`task_id`, `assignment_id`));
+PRIMARY KEY (`task_id`, `assignment_id`));
 
   CREATE TABLE `sendit`.`submission` (
   `submissionID` INT NOT NULL AUTO_INCREMENT,
@@ -26,7 +35,7 @@ CREATE TABLE `sendit`.`task` (
   `content` MEDIUMBLOB NULL,
   `plagiarism_report` VARCHAR(40),
   `marks` int,
-  `task_id` int not null,
+  `task_id` VARCHAR(30) not null,
   `srn` varchar(15) not null,
   PRIMARY KEY (`submissionID`),
   FOREIGN KEY (task_id) REFERENCES `sendit`.`task` (task_id),
@@ -148,14 +157,15 @@ BEGIN
 END $$
 DELIMITER ;
 
--- select * from classroom;
--- select * from assignment; 
+select * from classroom;
+select * from assignment; 
+select * from task; 
 -- select * from student_in_classroom;
 -- truncate table student_in_classroom;
 -- insert into student_in_classroom values("PES2UG21CS593", 1);
 
 -- SELECT classroom_id AS classroomId, code, section, name, semester, subject FROM classroom WHERE teacher_id="PESUT001";
-
+SELECT assignment_id AS assignId FROM assignment WHERE name = 'Assign' LIMIT 1;
 
 
 

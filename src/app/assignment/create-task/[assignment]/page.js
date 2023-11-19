@@ -14,7 +14,7 @@ function Tasks() {
   const [constraints, setConstraints] = useState('');
   const [numCases, setNumCases] = useState(1);
   const [hiddenSwitch, setHiddenSwitch] = useState(1);
-  const [classroomID, setClassroomID] = useState(searchParams.get('classroom'))
+  const [assignmentName, setAssignmentName] = useState(searchParams.get('assignmentName'))
   const [submittedTask, setSubmittedTask] = useState({
     "title":[]
   });
@@ -28,33 +28,6 @@ function Tasks() {
   });
   const [submittedTaskElements, setSubmittedTaskElements] = useState([]);
 
-
-
-
-  useEffect(()=>{
-    console.log("classroomID: ",classroomID)
-    //! Check if classroomID in db or nos
-  },[])
-
-  
-  const sendIt = async ()=>{ 
-		const options = {
-			method: 'POST',
-			url: 'http://localhost:4000/assignment/create-new-assignment',
-			body: {
-				submissions: [
-					// TO-DO
-				]
-			}
-		};
-
-		try {
-			const response = await axios.request(options);
-			console.log(response.data);
-		} catch (error) {
-			console.error(error);
-		}
-	}
 
   const updateTaskId = (event)=>{
     task['taskId'] = event.target.value
@@ -128,9 +101,9 @@ function Tasks() {
     data["Hidden"] = data["Hidden"]?0:1;
   }
   
-  const testButton = ()=>{
-    console.log(task)
-  }
+  // const testButton = ()=>{
+  //   console.log(task)
+  // }
 
   useEffect(()=>{
     setTask({
@@ -142,19 +115,46 @@ function Tasks() {
     });
   },[])
 
-  const createTask = ()=>{
-    //! send variable "task" in db
+  const createTask = async () => {
+    const problemStatement = {
+      title: task['taskTitle'],
+      description: task['taskDescription'],
+      constraints: task['constraints']
+    };
+    const sampleInputOutput = {
+      "TestCase": task['cases']
+    }
+		try {
+			const response = await fetch('http://localhost:4000/api/create-new-task', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					taskID: taskid,
+          assignmentName: assignmentName,
+          problemStatement: problemStatement,
+          sampleInputOutput: sampleInputOutput,
+          marks: 1,
+				}),
+			});
 
-    //! Below code is temporary
-    const temp = { ...submittedTask };
+			if (!response.ok) {
+				console.log("Something went wrong. Please try again later.");
+			} else {
+				const resultsJSON = await response.json();
+				const results = resultsJSON["data"];
 
-    temp.title.push(task.taskTitle);
-
-    setSubmittedTask({
-      ...temp,
-    });
-
-  }
+				if(results.length < 1){
+					return null;
+				}
+				return results;
+			}
+		} catch (error) {
+			console.error('Error creating task:', error);
+			return null;
+		}
+	};
 
   useEffect(()=>{
     console.log("SUBMITTED TASK")
@@ -166,6 +166,31 @@ function Tasks() {
     ));
     setSubmittedTaskElements(elements);
   }, [submittedTask]);
+
+  const handleTaskCreation = async () => {
+    const results = await createTask();
+    if (results) {
+      // Clear the form
+      setTaskId('');
+      setTaskTitle('');
+      setTaskDescription('');
+      setConstraints('');
+      setNumCases(1);
+      setTask({
+        taskId: '',
+        taskTitle: '',
+        taskDescription: '',
+        constraints: '',
+        numCases: 1,
+        cases:[]
+      });
+      alert('Task created successfully!');
+    } else {
+      alert('Something went wrong. Please try again later.');
+    }
+
+    return results;
+  }
   
   return (
     <section className='max-h-screen flex flex-col gap-3 overflow-y-auto scrollbar-none'>
@@ -227,7 +252,7 @@ function Tasks() {
 
           {/* ################################################################## */}
           <div className='flex justify-center items-center flex-row gap-3'>
-            <button className='bg-theme3 text-black w-32 p-2 rounded-sm' onClick={createTask}>Create Task</button>
+            <button className='bg-theme3 text-black w-32 p-2 rounded-sm' onClick={async () => {await handleTaskCreation()}}>Create Task</button>
             <button className='bg-theme4 text-black w-32 p-2 rounded-sm' onClick={updateNumCases}>+ Test Case</button>
             {/* <button className='bg-theme4 text-black w-32 p-2 rounded-sm' onClick={testButton}>Test State</button> */}
             

@@ -24,7 +24,7 @@ function createAssignment() {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					teacherId: "PESUT001", // Change to get from session
+					teacherId: "10", // Change to get from session
 				}),
 			});
 
@@ -186,7 +186,7 @@ function createAssignment() {
 					}
 				}
 			}
-			push(`/assignment/create-task?assignmentName=${encodeURIComponent(assignmentName)}`);
+			push(`/assignment/create-task/1?assignmentName=${encodeURIComponent(assignmentName)}`);
 		} catch (error) {
 			console.error('Error fetching data:', error);
 			return null;
