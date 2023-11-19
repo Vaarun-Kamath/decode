@@ -1,9 +1,12 @@
 "use client"
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import Navbar from '@/components/Navbar'
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 function Tasks() {
+
+  const searchParams = useSearchParams()
 
   const [taskid, setTaskId] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
@@ -11,7 +14,10 @@ function Tasks() {
   const [constraints, setConstraints] = useState('');
   const [numCases, setNumCases] = useState(1);
   const [hiddenSwitch, setHiddenSwitch] = useState(1);
-  
+  const [classroomID, setClassroomID] = useState(searchParams.get('classroom'))
+  const [submittedTask, setSubmittedTask] = useState({
+    "title":[]
+  });
   const [task, setTask] = useState({
     taskId: '',
     taskTitle: '',
@@ -20,7 +26,15 @@ function Tasks() {
     numCases: 1,
     cases:[]
   });
+  const [submittedTaskElements, setSubmittedTaskElements] = useState([]);
 
+
+
+
+  useEffect(()=>{
+    console.log("classroomID: ",classroomID)
+    //! Check if classroomID in db or nos
+  },[])
 
   
   const sendIt = async ()=>{ 
@@ -127,6 +141,31 @@ function Tasks() {
       ]
     });
   },[])
+
+  const createTask = ()=>{
+    //! send variable "task" in db
+
+    //! Below code is temporary
+    const temp = { ...submittedTask };
+
+    temp.title.push(task.taskTitle);
+
+    setSubmittedTask({
+      ...temp,
+    });
+
+  }
+
+  useEffect(()=>{
+    console.log("SUBMITTED TASK")
+  },[submittedTaskElements])
+
+  useEffect(() => {
+    const elements = submittedTask.title.map((value, i) => (
+      <p key={i} className='text-green'>Submitted {value}</p>
+    ));
+    setSubmittedTaskElements(elements);
+  }, [submittedTask]);
   
   return (
     <section className='max-h-screen flex flex-col gap-3 overflow-y-auto scrollbar-none'>
@@ -157,7 +196,7 @@ function Tasks() {
           </div>
 
           <div className='flex flex-col'>
-            <label >Task Description: </label>
+            <label >Task Description:</label>
             <textarea 
             className='outline-none p-2 rounded-sm placeholder-white placeholder-opacity-30 bg-transparent border border-theme2 resize-none'
             id="description" 
@@ -185,11 +224,24 @@ function Tasks() {
             required>
             </textarea>
           </div>
+
+          {/* ################################################################## */}
           <div className='flex justify-center items-center flex-row gap-3'>
-            <button className='bg-theme3 text-black w-32 p-2 rounded-sm'>Create Task</button>
+            <button className='bg-theme3 text-black w-32 p-2 rounded-sm' onClick={createTask}>Create Task</button>
             <button className='bg-theme4 text-black w-32 p-2 rounded-sm' onClick={updateNumCases}>+ Test Case</button>
-            <button className='bg-theme4 text-black w-32 p-2 rounded-sm' onClick={testButton}>Test State</button>
+            {/* <button className='bg-theme4 text-black w-32 p-2 rounded-sm' onClick={testButton}>Test State</button> */}
+            
+            <div className="outline-none p-1 w-96 rounded-sm bg-transparent border border-theme2 h-16 scrollbar-thin scrollbar-thumb-yellow-200 overflow-auto" >
+              {(()=>{
+                if(submittedTaskElements.length == 0){
+                  return "No test cases submitted"
+                }else{
+                  return submittedTaskElements
+                }
+              })()}
+            </div>
           </div>
+          {/* ################################################################## */}
           
         </div>
 
