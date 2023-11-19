@@ -90,7 +90,9 @@ BEGIN
 END $$
 DELIMITER ;
 
+select * from student;
 
+update student set email = "mail.varunkamath@gmail.com";
 
 
 

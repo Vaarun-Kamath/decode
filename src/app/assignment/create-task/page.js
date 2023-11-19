@@ -11,6 +11,7 @@ function Tasks() {
   const [constraints, setConstraints] = useState('');
   const [numCases, setNumCases] = useState(1);
   const [hiddenSwitch, setHiddenSwitch] = useState(1);
+  
   const [task, setTask] = useState({
     taskId: '',
     taskTitle: '',
@@ -19,6 +20,8 @@ function Tasks() {
     numCases: 1,
     cases:[]
   });
+
+
   
   const sendIt = async ()=>{ 
 		const options = {
@@ -98,7 +101,7 @@ function Tasks() {
         el['id'] === key ? (index = count) : count++
       );
       taskList.splice(index, 1);
-      setTask({ cases: taskList });
+      setTask({ ...task, cases: taskList });
       // console.log("Deleting", key)
       // delete task.cases.filter(data => {return data['id'] == key})[0]
     }
@@ -117,6 +120,7 @@ function Tasks() {
 
   useEffect(()=>{
     setTask({
+      ...task,
       cases:[
         ...task.cases,
         {"id": 0, "Input": "", "Output": "", "Explanation":"", "Hidden": 0}

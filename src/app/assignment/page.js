@@ -10,6 +10,8 @@ function nowebsite(){
 
 function TaskDisplay() {
 	const [Tasks, setTasks] = useState(null);
+
+	
 	const getTasks = ()=>{
 		return JSON.stringify([{
 			taskID: 'ThisIs2Sum',

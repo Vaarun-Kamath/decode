@@ -88,7 +88,9 @@ async function handleNormalLogin(password, user, res, results) {
 
 app.post('/api/studentExists', async (req, res) => {
     const query = `SELECT Email, FirstName, Password FROM student WHERE Email = '${req.body.email}' LIMIT 1;`;
-
+    console.log("---------------------------")
+    console.log(req)
+    console.log("---------------------------")
     try {
         const resultsJSON = await executeQuery(query);
         if (resultsJSON["success"] == false) {
