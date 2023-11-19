@@ -36,3 +36,5 @@ next-env.d.ts
 
 # key authentication
 .env
+
+server/node_modules/*
