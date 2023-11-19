@@ -2,6 +2,7 @@
 
 import Navbar from '@/components/Navbar'
 import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation';
 
 function createClassroom() {
 
@@ -11,6 +12,8 @@ function createClassroom() {
   const [semester, setSemester] = useState(null) // input
   const [subject, setSubject] = useState(null) // input
   const [teacher_id, setTeacher_id] = useState(null) // infered from profile
+
+  const {push} = useRouter();
 
 
   useEffect(()=>{
@@ -37,9 +40,39 @@ function createClassroom() {
     setSubject(event.target.value)
   }
 
-  const handleClassroomCreation = (event)=>{
-    console.log("CREATING CLASSROOM")
-  }
+  const handleClassroomCreation = async () => {
+		try {
+			const response = await fetch('http://localhost:4000/api/create-new-classroom', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					section: section,
+          name: name,
+          semester: semester,
+          subject: subject,
+          teacherId: teacher_id
+				}),
+			});
+			if (!response.ok) {
+				console.log("Error creating classroom. Please try again later.");
+			} else {
+				const resultsJSON = await response.json();
+        const results = resultsJSON["data"];
+
+        if(results.length < 1){
+          return null;
+        }
+
+        console.log("Classroom created successfully.");
+        push("/classrooms");
+			}
+		} catch (error) {
+			console.error('Error fetching data:', error);
+			return null;
+		}
+	};
   
 
   const testButton = (event)=>{
@@ -86,7 +119,7 @@ function createClassroom() {
 						</span>
 
 						<span className='flex w-full flex-row gap-1'>
-							<button className='bg-theme3 text-black w-fit p-3 rounded-sm' onClick={handleClassroomCreation}>Create Classroom</button>
+							<button className='bg-theme3 text-black w-fit p-3 rounded-sm' onClick={async ()=> { await handleClassroomCreation(); }}>Create Classroom</button>
 							<button className='bg-theme4 text-black w-fit p-3 rounded-sm' onClick={testButton}>Test Button</button>
 						</span>
 

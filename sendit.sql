@@ -53,7 +53,7 @@ CREATE TABLE `sendit`.`task` (
   );
 
 CREATE TABLE `sendit`.`assignment` (
-  `assignment_id` INT NOT NULL,
+  `assignment_id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
   `deadline` DATETIME NOT NULL,
   `teacher_id` VARCHAR(15) NOT NULL,
@@ -148,9 +148,13 @@ BEGIN
 END $$
 DELIMITER ;
 
+-- select * from classroom;
+-- select * from assignment; 
+-- select * from student_in_classroom;
+-- truncate table student_in_classroom;
+-- insert into student_in_classroom values("PES2UG21CS593", 1);
 
-
-
+-- SELECT classroom_id AS classroomId, code, section, name, semester, subject FROM classroom WHERE teacher_id="PESUT001";
 
 
 

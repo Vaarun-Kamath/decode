@@ -88,9 +88,6 @@ async function handleNormalLogin(password, user, res, results) {
 
 app.post('/api/studentExists', async (req, res) => {
     const query = `SELECT Email, FirstName, Password FROM student WHERE Email = '${req.body.email}' LIMIT 1;`;
-    console.log("---------------------------")
-    console.log(req)
-    console.log("---------------------------")
     try {
         const resultsJSON = await executeQuery(query);
         if (resultsJSON["success"] == false) {
@@ -162,7 +159,6 @@ app.post('/api/create-new-task', async (req,res)=>{
     }
 });
 
-
 app.post('/api/create-new-classroom', async (req,res)=>{
     const query = `INSERT INTO classroom(section, name, semester, subject, teacher_id) VALUES('${req.body.section}', '${req.body.name}', ${req.body.semester}, '${req.body.subject}', '${req.body.teacherId}');`;
 
@@ -177,7 +173,7 @@ app.post('/api/create-new-classroom', async (req,res)=>{
 
 
 app.post('/api/create-new-assignment', async (req,res)=>{
-    const query = `INSERT INTO assignment VALUES(${req.body.assignmentID}, '${req.body.deadline}', ${req.body.taskId}, '${req.body.teacherID}', ${req.body.classroomID});`;
+    const query = `INSERT INTO assignment (name, deadline, teacher_id, classroom_id) VALUES('${req.body.assignmentName}', '${req.body.deadline}', '${req.body.teacherID}', ${req.body.classroomID});`;
 
     try {
         const results = await executeQuery(query);
@@ -202,9 +198,25 @@ app.post('/api/create-new-submission', async (req,res)=>{
 });
 
 app.post('/api/student-join-classroom', async (req,res)=>{
-    const query = `INSERT INTO student_in_classroom VALUES ('${req.body.SRN}', '${req.body.classroomID}');`;
+
+    const SRNQuery = `SELECT get_SRN_from_email('${req.body.email}') AS SRN;`; 
 
     try {
+
+        const SRNResults = await executeQuery(SRNQuery);
+        if(SRNResults["success"] == false){
+            handleServerError(res);
+            return;
+        }
+        
+        if(SRNResults["data"].length < 1){
+            handleNotFound(res);
+            return;
+        }
+
+        var SRN = SRNResults["data"][0]["SRN"];
+        const query = `INSERT INTO student_in_classroom VALUES ('${SRN}', '${req.body.classroomID}');`;
+        
         const results = await executeQuery(query);
         res.json(results);
     } catch (error) {
@@ -240,6 +252,35 @@ app.post('/api/get-classrooms-for-student', async (req,res)=>{
     }
 });
 
+app.post('/api/get-classrooms-for-teacher', async (req,res)=>{
+
+    const query = `SELECT classroom_id AS classroomId, code, section, name, semester, subject FROM classroom WHERE teacher_id='${req.body.teacherId}';`; 
+    //SELECT classroom_id AS classroomId, code, section, name, semester, subject FROM classroom WHERE teacher_id="PESUT001";
+    
+    try {
+        
+        // const IDResults = await executeQuery(SRNQuery);
+        // if(SRNResults["success"] == false){
+        //     handleServerError(res);
+        //     return;
+        // }
+        
+        // if(SRNResults["data"].length < 1){
+        //     handleNotFound(res);
+        //     return;
+        // }
+
+        // var SRN = SRNResults["data"][0]["SRN"];
+        // const query = `SELECT classroom_id AS classroomId, section, name, semester, subject, CONCAT(t.first_name, ' ', t.last_name) AS teacher FROM classroom c JOIN student_in_classroom sic on c.classroom_id = sic.ClassroomID JOIN teacher t ON t.teacher_id = c.teacher_id where sic.srn = '${SRN}';`;
+
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/create-new-submission endpoint:", error);
+        handleServerError(res);
+    }
+});
+
 app.get('/api/get-srn', async (req,res)=>{
     const query = `SELECT get_SRN_from_email('${req.body.email}') AS SRN;`;
 
@@ -248,6 +289,30 @@ app.get('/api/get-srn', async (req,res)=>{
         res.json(results);
     } catch (error) {
         console.error("Error in /api/get-srn endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+app.get('/api/get-assignments-for-classroom', async (req,res)=>{
+    const query = `SELECT DISTINCT name, deadline, teacher_id FROM assignment WHERE classroom_id = ${req.body.classroomId};`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/get-srn endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+app.post('/api/check-class-code', async (req,res)=>{
+    const query = `SELECT * FROM classroom WHERE code = '${req.body.classroomCode}' LIMIT 1;`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/check-class-code endpoint:", error);
         handleServerError(res);
     }
 });
