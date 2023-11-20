@@ -3,6 +3,7 @@
 import Navbar from '@/components/Navbar'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation';
+import cookie from 'js-cookie'
 
 function createClassroom() {
 
@@ -15,11 +16,46 @@ function createClassroom() {
 
   const {push} = useRouter();
 
+  
 
-  useEffect(()=>{
-    setTeacher_id(10)
-  },[])
+  const getTeacherID = async () => {
+		try {
+			const response = await fetch('http://localhost:4000/api/get-teacher-id', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					email: cookie.get('email'),
+				}),
+			});
 
+			if (!response.ok) {
+				console.log("Error fetching teacher. Please try again later.");
+			} else {
+				const results = await response.json();
+				console.log("results::", results)
+        		console.log("TID: ", results['data'][0]['TID'])
+				return results['data'][0]['TID'];
+			}
+		} catch (error) {
+			console.error('Error fetching data:', error);
+			return null;
+		}
+	};
+
+
+  useEffect(() => {
+    const fetchTeacherID = async () => {
+      const teacherIdResult = await getTeacherID();
+	  console.log("teacherIdResult: ",teacherIdResult)
+      if (teacherIdResult) {
+        setTeacher_id(teacherIdResult); // Assuming the result is the teacher_id
+      }
+    };
+
+    fetchTeacherID();
+  }, []);
   // const handleClassroomIDChange = (event)=>{
   //   setClassroom_id(event.target.value)
   // }

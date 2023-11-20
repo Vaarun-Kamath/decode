@@ -12,15 +12,6 @@ CREATE TABLE `sendit`.`student` (
   `semester` INT NOT NULL,
   PRIMARY KEY (`SRN`));
 
--- CREATE TABLE `sendit`.`testcase` (
---   `testcase_id` INT NOT NULL,
---   `task_id` INT NOT NULL,
---   `input` VARCHAR(50) NOT NULL,
---   `output` VARCHAR(50) NOT NULL,
---   `explanation` VARCHAR(100) NOT NULL,
---   `hidden` INT NOT NULL DEFAULT 0,
--- PRIMARY KEY (`testcase_id`, `task_id`));
-
 CREATE TABLE `sendit`.`task` (
   `task_id` VARCHAR(30) NOT NULL,
   `assignment_id` INT NOT NULL,
@@ -100,6 +91,16 @@ BEGIN
 END $$
 DELIMITER ;
 
+DELIMITER $$
+CREATE FUNCTION get_tid_from_email(e varchar(50))
+RETURNS VARCHAR(15) DETERMINISTIC
+BEGIN
+    DECLARE selected_tid VARCHAR(15);
+    SELECT teacher_id INTO selected_tid FROM teacher WHERE email = e;
+    RETURN selected_tid;
+END $$
+DELIMITER ;
+
 ALTER TABLE task ADD FOREIGN KEY (assignment_id) REFERENCES `sendit`.`assignment` (assignment_id);
 
 DELIMITER $$
@@ -157,17 +158,16 @@ BEGIN
 END $$
 DELIMITER ;
 
-select * from classroom;
-select * from assignment; 
-select * from task; 
+-- select * from classroom;
+-- select * from assignment; 
 -- select * from student_in_classroom;
 -- truncate table student_in_classroom;
 -- insert into student_in_classroom values("PES2UG21CS593", 1);
 
 -- SELECT classroom_id AS classroomId, code, section, name, semester, subject FROM classroom WHERE teacher_id="PESUT001";
-SELECT assignment_id AS assignId FROM assignment WHERE name = 'Assign' LIMIT 1;
 
 
+select * from teacher;
 
 
 

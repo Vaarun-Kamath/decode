@@ -3,12 +3,39 @@ import React from 'react'
 import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import cookie from 'js-cookie'
+import { useRouter } from 'next/navigation';
 // posts -> assignments
 
 export default function Classrooms() {
 
-	const {data} = useSession();
+	var {data} = useSession();
+	const {push} = useRouter();
 	const [classrooms, setClassrooms] = useState(null);
+	// const {data} = useSession()
+
+	if(data == null){
+		if(cookie.get('email') != undefined){
+			data = {
+				user:{
+				email: cookie.get('email'),
+				userRole: cookie.get('userRole')
+				}
+			};
+		}else{
+			push('/login')
+		}
+	}
+	// if(data == null){
+	// 	console.log("COOKIE: ",cookie.get('userRole'))
+	// 	setData({
+	// 		user:{
+	// 			email: cookie.get('email'),
+	// 			userRole: cookie.get('userRole')
+	// 		}
+	// 	})
+	// }
+	
 	
 	const getClassrooms = async () => {
 		try {
@@ -44,7 +71,8 @@ export default function Classrooms() {
 	}
 	useEffect(()=>{
 		saveClassrooms();
-	},[data])
+		console.log('USEEFF: ',data)
+	},[])
 
 	return (
 		<section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1">

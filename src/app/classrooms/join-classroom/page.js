@@ -3,16 +3,30 @@ import Navbar from '@/components/Navbar'
 import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation';
+import cookie from 'js-cookie'
 
 function joinClassroom() {
 
   const [classCode, setClassCode] = useState('')
-  const {data} = useSession();
+  var {data} = useSession();
   const {push} = useRouter();
 
   const updateClassCode = (event)=>{
     setClassCode(event.target.value)
   }
+
+  if(data == null){
+		if(cookie.get('email') != undefined){
+			data = {
+				user:{
+				email: cookie.get('email'),
+				userRole: cookie.get('userRole')
+				}
+			};
+		}else{
+			push('/login')
+		}
+	}
 
   useEffect(()=>{
     console.log(classCode)

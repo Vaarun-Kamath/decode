@@ -8,20 +8,39 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import "../globals.css";
 import { sign } from 'crypto';
+import cookie from 'js-cookie'
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+// import { getServerSideProps } from 'next/dist/build/templates/pages';
 
 const Login = ()=>{
 
   var {data} = useSession();
+
+  if(data == null){
+    if(cookie.get('email') != undefined){
+      data = {
+        user:{
+          email: cookie.get('email'),
+          userRole: cookie.get('userRole')
+        }
+      };
+    }
+  }
+  
+
   // var data = null;
   const {push} = useRouter();
   // var userInDb = false
+
 
   const [srn, setSrn] = useState();
   const [first, setFirst] = useState();
   const [last, setLast] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
+  const [teacherEmail, setTeacherEmail] = useState();
+  const [teacherPassword, setTeacherPassword] = useState();
   const [section, setSection] = useState();
   const [semester, setSemester] = useState();
   const [userInDb,setUserInDb] = useState(false);
@@ -73,17 +92,13 @@ const Login = ()=>{
         }),
       });
 
-      const result = await response.json();
+      var result = await response.json();
+      console.log("result",result)
 
-      if (result && result.length > 0) {
-        // User exists in the database, redirect to the appropriate page
-        // Add first name and email to data object
-        data = {
-          ...data,
-          name: result[0].FirstName,
-          email: result[0].email,
-        }
-        console.log("DATA:::::",data)
+      if (result[0].userRole != undefined) {
+        cookie.set('userRole', result[0].userRole, {expires:1/24})
+        cookie.set('email', result[0].email, {expires:1/24})
+        console.log("Result: ", result[0]);
         push('/classrooms');
         // userInDb = true
       } else {
@@ -101,6 +116,7 @@ const Login = ()=>{
 
   useEffect(() => {
     const checkUserInDatabase = async () => {
+      console.log("data", data)
       if (data) {
         const response = await fetch('http://localhost:4000/api/studentExists', {
           method: 'POST',
@@ -116,7 +132,7 @@ const Login = ()=>{
 
         const result = await response.json();
 
-        console.log("RES:L ", result)
+        // console.log("RES:L ", result)
 
         if (result && result.length > 0) {
           // User exists in the database, redirect to the appropriate page
@@ -134,7 +150,6 @@ const Login = ()=>{
         console.log(" :: ",userInDb);
       }
     };
-
     checkUserInDatabase();
   }, [data]);
 
@@ -142,20 +157,74 @@ const Login = ()=>{
     console.log("USER CHANGED")
   },[userInDb])
 
-  // if (!data) {
-  //   return <div>Loading...</div>;
-  // }
+  const teacherLogin = async ()=>{
+    console.log("Email: ", teacherEmail)
+    console.log("Password: ", teacherPassword)
+    try {
+      const response = await fetch('http://localhost:4000/api/teacherExists', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: teacherEmail,
+          password: teacherPassword,
+          loginMethod: "Normal",
+        })
+      });
 
+      console.log("response: ",response)
+      if (response.ok){
+        const result = await response.json();
+        console.log("Result: ", result[0]);
+        cookie.set('userRole', result[0].userRole, {expires:1/24})
+        cookie.set('email', result[0].email, {expires:1/24})
+        push('/classrooms')
+      }else{
+        console.error('Server responded with an error:', response.status);
+        alert("An error occurred. Please try again later.");
+      }
+
+      // const result = await response.json();
+
+      // console.log("res[0]: ",result[0])
+
+      // if (result && result.length > 0) {  
+      //   // User exists in the database, redirect to the appropriate page
+      //   // Add first name and email to data object
+      //   data = {
+      //     ...data,
+      //     name: result[0].first_name,
+      //     email: result[0].email,
+      //   }
+      //   console.log("recData: ",data)
+
+      // } else {
+      //   // User does not exist, show additional details form
+      //   // You can set a flag or state here to conditionally render the form
+      //   // setUserInDb(false);
+      //   alert("Invalid email or password. Please try again.")
+      // }
+    } catch (error) {
+      console.error('Error logging in:', error);
+      // Handle failure
+      alert("An error occurred. Please try again later.")
+    }
+
+  }
   if(data == null || data == undefined){
     return (
       <section className="min-h-screen min-w-full flex gap-2 flex-col bg-neutral-900 text-theme1" id={"login-container"}>
-        <div className="flex min-h-screen pr-14 pl-14 mr-10 ml-10 justify-end items-center">
-          <div className="bg-gray-800 rounded-lg flex flex-col p-7 h-fit gap-3">
-            <h1 className="text-2xl">Login</h1>
+        <div className="flex h-screen pr-14 pl-14 mr-10 ml-10 justify-between items-center">
+          
+          
+          {/* STUDNET LOGIN */}
+          <div className="bg-gray-800 rounded-lg flex flex-col p-7 h-1/2 gap-3 w-1/3 justify-center">
+            <h1 className="text-2xl">Student Login</h1>
             {/* Email input */}
             <div className="flex flex-col gap-1">
               <label htmlFor="email">Email</label>
-              <input onChange={(event)=>{setEmail(event.target.value)}} className='h-10 p-2 rounded-sm outline-none text-black' id="email" name="email" placeholder="email" />
+              <input onChange={(event)=>{setEmail(event.target.value)}} className='h-10 p-2 rounded-sm outline-none text-black' id="email" name="email" placeholder="Email" />
             </div>
   
             {/* Password input */}
@@ -176,6 +245,36 @@ const Login = ()=>{
               <button className="bg-neutral-800 p-2 rounded-sm" onClick={() => signIn("google")}>Sign in with Google</button>
               <button className="bg-neutral-800 p-2 rounded-sm" onClick={() => signOut("github")}>Sign Out</button>
             </div>
+          </div>
+
+
+          {/* TEACHER LOGIN */}
+          <div className="bg-gray-800 rounded-lg flex flex-col p-7 h-1/2 gap-3 w-1/3 justify-center">
+            <h1 className="text-2xl">Teacher Login</h1>
+            {/* Email input */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="email">Email</label>
+              <input onChange={(event)=>{setTeacherEmail(event.target.value)}} className='h-10 p-2 rounded-sm outline-none text-black' id="email" name="email" placeholder="Email" />
+            </div>
+  
+            {/* Password input */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="password">Password</label>
+                <input onChange={(event)=>{setTeacherPassword(event.target.value)}} className='h-10 p-2 rounded-sm outline-none text-black' type="password" id="password" name="password" placeholder="Password"
+                />
+            </div>
+            <div className="text-sm">
+              <a href="#forgot-password">Forgot Password?</a>
+            </div>
+            {/* Submit button */}
+            <button type="submit" className="bg-neutral-800 p-2 rounded-sm" onClick={teacherLogin}>Log in</button>
+  
+            {/* Buttons for signing in with GitHub and Google */}
+            {/* <div className="flex flex-row gap-2">
+              <button className="bg-neutral-800 p-2 rounded-sm" onClick={() => signIn("github")}>Sign in with GitHub</button>
+              <button className="bg-neutral-800 p-2 rounded-sm" onClick={() => signIn("google")}>Sign in with Google</button>
+              <button className="bg-neutral-800 p-2 rounded-sm" onClick={() => signOut("github")}>Sign Out</button>
+            </div> */}
           </div>
         </div>
         {/* Display the CreateAccountForm by default */}

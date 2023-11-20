@@ -1,10 +1,11 @@
 "use client"
-import React, { use, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import Navbar from '@/components/Navbar';
 import { useState } from 'react';
-import 'flowbite';
+import 'flowbite'
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import cookie from 'js-cookie'
+
 
 function createAssignment() {
 	// const [selectedTask, setSelectedTask] = useState([]);
@@ -16,6 +17,32 @@ function createAssignment() {
 
 	const {push} = useRouter();
 
+	const getTeacherID = async () => {
+		try {
+			const response = await fetch('http://localhost:4000/api/get-teacher-id', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					email: cookie.get('email'),
+				}),
+			});
+
+			if (!response.ok) {
+				console.log("Error fetching teacher. Please try again later.");
+			} else {
+				const results = await response.json();
+				console.log("results::", results)
+        		console.log("TID: ", results['data'][0]['TID'])
+				return results['data'][0]['TID'];
+			}
+		} catch (error) {
+			console.error('Error fetching data:', error);
+			return null;
+		}
+	};
+
 	const getClassrooms = async () => {
 		try {
 			const response = await fetch('http://localhost:4000/api/get-classrooms-for-teacher', {
@@ -24,7 +51,7 @@ function createAssignment() {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					teacherId: "10", // Change to get from session
+					teacherId: await getTeacherID(), // Change to get from session
 				}),
 			});
 
@@ -61,76 +88,9 @@ function createAssignment() {
 		saveClassrooms();
 	},[])
 
-	// const tasks = [ //! GET THIS USING SQL
-	// 	{
-	// 		taskId: '3929A',
-	// 		taskTitle: 'Nice Title',
-	// 		taskDescription: 'good description',
-	// 		constraints: 'no constraints :)',
-	// 		numCases: 3,
-	// 		cases:[]
-	// 	},
-	// 	{
-	// 		taskId: '37838A',
-	// 		taskTitle: 'Job 3',
-	// 		taskDescription: '3 Dostor',
-	// 		constraints: 'opsara',
-	// 		numCases: 2,
-	// 		cases:[]
-	// 	},
-	// 	{
-	// 		taskId: '2901B',
-	// 		taskTitle: 'Ultery',
-	// 		taskDescription: 'Poluchol',
-	// 		constraints: 'helaychi',
-	// 		numCases: 9,
-	// 		cases:[]
-	// 	},
-		
-	// ]
-
-	// const classrooms = async () => {
-	// 	try {
-	// 		const response = await fetch('http://localhost:4000/api/get-assignments-for-classroom', {
-	// 			method: 'POST',
-	// 			headers: {
-	// 				'Content-Type': 'application/json',
-	// 			},
-	// 			body: JSON.stringify({
-	// 				classroomCode: classCode,
-	// 			}),
-	// 		});
-	// 		if (!response.ok) {
-	// 			console.log("Error fetching classrooms. Please try again later.");
-	// 		} else {
-	// 			const resultsJSON = await response.json();
-    //     const results = resultsJSON["data"];
-
-    //     if(results.length < 1){
-    //       return null;
-    //     }
-
-	// 			return results;
-	// 		}
-	// 	} catch (error) {
-	// 		console.error('Error fetching data:', error);
-	// 		return null;
-	// 	}
-	// };
-
-	// const handleSelectTask = (event, taskId)=>{
-	// 	// console.log(selectedTask.filter(val=>{return val == taskId}))
-	// 	if(selectedTask.find((val)=>{
-	// 		return val === taskId
-	// 	}) != undefined){
-	// 		const newSelection = selectedTask.filter((val)=>{
-	// 			return val !== taskId
-	// 		})
-	// 		setSelectedTask(newSelection);
-	// 	}else{
-	// 		setSelectedTask([...selectedTask, taskId]);
-	// 	}
-	// }
+	useEffect(()=>{
+		console.log("CHANGED CLASSROOMS")
+	},[classrooms])
 
 	const handleSelectClassroom = (event, classroomID)=>{
 		if(selectedClassroom.find((val)=>{
@@ -170,7 +130,7 @@ function createAssignment() {
 						// assignmentId: assignmentId,
 						assignmentName: assignmentName,
 						deadline: deadline,
-						teacherID: "PESUT001",
+						teacherID: await getTeacherID(),
 						classroomID: selectedClassroom[i]
 					}),
 				});
@@ -202,12 +162,13 @@ function createAssignment() {
 
 	}
 
-	const testButton = ()=>{
+	const testButton = async()=>{
 		// console.log("ID: ",assignmentId);
 		console.log("Name: ",assignmentName);
 		// console.log("Tasks: ",selectedTask);
 		console.log("Classrooms: ",selectedClassroom);
 		console.log("Deadline: ",deadline);
+		console.log(await getTeacherID())
 	}
 
 	const today = new Date();
@@ -223,18 +184,14 @@ function createAssignment() {
 	const handleAssignmentNameChange = (event)=>{
 		setAssignmentName(event.target.value);
 	}
-
+	if (classrooms.length != 0)
 	return (
 		<section className='min-h-screen w-screen flex flex-col'>
-     		<Navbar />
+			<Navbar />
 			<div className='flex h-screen -mt-16 justify-center items-center bg-neutral-800'>
 				<div className='w-1/3 h-fit p-10 flex flex-col gap-10 bg-neutral-800 rounded-md'>
 					<h1 className='text-2xl'>Create Assignment</h1>
 					<div className='flex flex-col w-full gap-10'>
-						{/* <span className='flex w-full flex-col gap-1'>
-							<p>Assignment ID</p>
-							<input onChange = {handleAssignmentIDChange} placeholder='Enter Assignment ID' className='outline-none rounded-sm bg-transparent border border-theme3 text-white p-2 h-10'/>
-						</span> */}
 						<span className='flex w-full flex-col gap-1'>
 							<p>Assignment Name</p>
 							<input onChange = {handleAssignmentNameChange} placeholder='Enter Assignment Name' className='outline-none rounded-sm bg-transparent border border-theme3 text-white p-2 h-10'/>
@@ -243,38 +200,6 @@ function createAssignment() {
 							<p>Assignment Deadline</p>
 							<input onChange={handleDeadlineChange} type='datetime-local' min={`${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}T${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`} placeholder='Enter Assignment Deadline' className='outline-none rounded-sm bg-transparent border border-theme3 text-white p-2 h-10' />
 						</span>
-						{/* <span className='flex w-full flex-col gap-1 relative'>
-							<button 
-							id="dropdownHelperButton" 
-							data-dropdown-toggle="dropdownHelper" 
-							className="text-black bg-theme3 hover:bg-theme3 focus:outline-none focus:bg-white font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-theme3 dark:hover:bg-theme3 dark:focus:bg-theme3" 
-							type="button"
-							>
-								Select Tasks
-								<svg className="w-2.5 h-2.5 ml-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-									<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
-								</svg>
-							</button>
-							<div id="dropdownHelper" className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-lg scrollbar-thumb-[#FFD369] absolute right-0 top-12 w-60 dark:bg-gray-700 dark:divide-gray-600">
-								<ul className="p-2 space-y-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownHelperButton">
-									{tasks.map((value,key)=>(
-										<li key={key}>
-											<div className="flex select-none p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-												<div className="flex items-center h-5">
-													<input onClick={event =>handleSelectTask(event, value.taskId)} id="helper-checkbox-1" aria-describedby="helper-checkbox-text-1" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" />
-												</div>
-												<div className="ms-2 text-sm">
-													<label className="font-medium text-gray-900 dark:text-gray-300">
-														<div>{value.taskTitle}</div>
-														<p id="helper-checkbox-text-1" className="text-xs font-normal text-gray-500 dark:text-gray-300">{value.taskDescription}</p>
-													</label>
-												</div>
-											</div>
-										</li>
-									))}
-								</ul>
-							</div>
-						</span> */}
 						<span className='flex w-full flex-col gap-1'>
 							
 							<button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" className="text-black bg-theme3 hover:bg-theme3 focus:outline-none focus:bg-white font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-theme3 dark:hover:bg-theme3 dark:focus:bg-theme3" type="button">Select Classroom
@@ -320,7 +245,11 @@ function createAssignment() {
 				</div>
 			</div>
 		</section>
+		
 	)
+	else{
+		return null
+	}
 }
 
 export default createAssignment

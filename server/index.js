@@ -4,18 +4,63 @@ const bodyParser = require('body-parser');
 const { exec } = require('child_process');
 const { randomUUID } = require('crypto');
 const bcrypt = require('bcryptjs');
+// var session = require('express-session');
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 
 const PORT = 4000
 const app = express();
 
-app.use(logger);
+app.use(express.urlencoded({ extended: true }));
+
+// app.use(logger);
 app.use(bodyParser.json());
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Update with your client URL
+    res.header('Access-Control-Allow-Credentials', true);
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+  });
+
+const oneDay = 1000 * 60 * 60 * 24;
+// app.use(session({  
+//     name: `userRole`,
+//     secret: 'some-secret-example',  
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: { 
+//         secure: false, // This will only work if you have https enabled!
+//         maxAge: oneDay // 1 min
+//     } 
+// }));
+
+
+// var sessionChecker = (req, res, next) => {    
+//     console.log(`Session Checker: ${req.session.id}`.green);
+//     console.log(req.session);
+//     if (req.session.profile) {
+//         console.log(`Found User Session`.green);
+//         next();
+//     } else {
+//         console.log(`No User Session Found`.red);
+//         res.redirect('/login');
+//     }
+// };
+
+// app.get('/', sessionChecker, async function(req, res, next) {
+//     res.redirect('/account');
+// });
 
 require('dotenv').config({path: "../.env"});
 
-const cors = require("cors");
+
+const e = require('express');
+
 app.use(cors());
+app.options('/api/teacherExists', cors());
 
 const pool = mysql.createPool({
     host: 'localhost',
@@ -44,10 +89,10 @@ const pool = mysql.createPool({
 
 //! ############################################ ID GENERATION FORMULA ########################################
 
-function logger(req, res, next){
-    console.log(`[${Date.now()}] ${req.method} ${req.url}`)
-    next();
-}
+// function logger(req, res, next){
+//     console.log(`[${Date.now()}] ${req.method} ${req.url}`)
+//     next();
+// }
 
 function executeQuery(query) {
     return new Promise((resolve, reject) => {
@@ -76,18 +121,27 @@ async function handleUnauthorized(res) {
     res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
-async function handleNormalLogin(password, user, res, results) {
-    const passwordMatch = await bcrypt.compare(password, user.Password);
-    
+async function handleNormalLogin(password, user, res, req, results, type) {
+    console.log("HASH: ",password, user.password)
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    const results2 = [{
+        email: results[0].email,
+        userRole: type
+    }]
     if (passwordMatch) {
-        res.json(results);
+        res.json(results2)
     } else {
         handleUnauthorized(res);
     }
 }
 
+app.get('/api/logout', async function(req, res, next) {
+    res.clearCookie('userRole')
+    res.redirect('/login');
+});
+
 app.post('/api/studentExists', async (req, res) => {
-    const query = `SELECT email, first_name, password FROM student WHERE email = '${req.body.email}' LIMIT 1;`;
+    const query = `select email, first_name, password from student where email = '${req.body.email}' LIMIT 1;`;
     try {
         const resultsJSON = await executeQuery(query);
         if (resultsJSON["success"] == false) {
@@ -95,8 +149,11 @@ app.post('/api/studentExists', async (req, res) => {
             return;
         }
 
-        const results = resultsJSON["data"];
+        console.log("resultsJSON",resultsJSON)
+
+        const results = resultsJSON['data'];
         const user = results[0];
+       
 
         if (results.length < 1) {
             handleNotFound(res);
@@ -104,7 +161,7 @@ app.post('/api/studentExists', async (req, res) => {
         }
 
         if (req.body.loginMethod == "Normal") {
-            handleNormalLogin(req.body.password, user, res, results);
+            handleNormalLogin(req.body.password, user, res, req, results, 0);
         } else if (req.body.loginMethod == "NextAuth") {
             res.json(results);
         } else {
@@ -113,6 +170,46 @@ app.post('/api/studentExists', async (req, res) => {
 
     } catch (error) {
         console.error('Error in /api/studentExists endpoint:', error);
+        handleServerError(res);
+    }
+});
+
+app.post('/api/teacherExists', async (req, res) => {
+    // console.log(`select email, first_name, password from teacher where email = '${req.body.email}' limit 1;`)
+    const query = `select email, first_name, password from teacher where email = '${req.body.email}' limit 1;`;
+    try {
+        const resultsJSON = await executeQuery(query);
+        if (resultsJSON["success"] == false) {
+            handleServerError(res);
+            return;
+        }
+
+        const results = resultsJSON["data"];
+        // console.log(resultsJSON)
+        const user = results[0];
+        console.log("user",user)
+
+        // console.log("PASS:", req.body.password)
+        // console.log("Cookie", req.cookies)
+
+        if (results.length < 1) {
+            handleNotFound(res);
+            return;
+        }
+
+        // console.log("results: ",results)
+
+        // res.json(results);
+        if (req.body.loginMethod == "Normal") {
+            handleNormalLogin(req.body.password, user, res, req, results, 1);
+        } else if (req.body.loginMethod == "NextAuth") {
+            res.json(results);
+        } else{
+            handleBadRequest(res);
+        }
+
+    } catch (error) {
+        console.error('Error in /api/teacherExists endpoint:', error);
         handleServerError(res);
     }
 });
@@ -227,7 +324,7 @@ app.post('/api/create-new-submission', async (req,res)=>{
 
 app.post('/api/student-join-classroom', async (req,res)=>{
 
-    const SRNQuery = `SELECT get_SRN_from_email('${req.body.email}') AS SRN;`; 
+    const SRNQuery = `select get_SRN_from_email('${req.body.email}') AS SRN;`; 
 
     try {
 
@@ -253,9 +350,35 @@ app.post('/api/student-join-classroom', async (req,res)=>{
     }
 });
 
+app.post('/api/get-teacher-id', async (req,res)=>{
+
+    const TIDQuery = `select get_tid_from_email('${req.body.email}') AS TID;`; 
+
+    try {
+
+        const TIDResults = await executeQuery(TIDQuery);
+        if(TIDResults["success"] == false){
+            handleServerError(res);
+            return;
+        }
+        
+        if(TIDResults["data"].length < 1){
+            handleNotFound(res);
+            return;
+        }
+
+        // var TID = TIDResults["data"][0]["TID"];
+        
+        res.json(TIDResults);
+    } catch (error) {
+        console.error("Error in /api/student-join-classroom endpoint:", error);
+        handleServerError(res);
+    }
+});
+
 app.post('/api/get-classrooms-for-student', async (req,res)=>{
 
-    const SRNQuery = `SELECT get_SRN_from_email('${req.body.email}') AS SRN;`;  
+    const SRNQuery = `select get_SRN_from_email('${req.body.email}') AS SRN;`;  
     try {
         
         const SRNResults = await executeQuery(SRNQuery);
@@ -270,7 +393,7 @@ app.post('/api/get-classrooms-for-student', async (req,res)=>{
         }
 
         var SRN = SRNResults["data"][0]["SRN"];
-        const query = `SELECT classroom_id AS classroomId, section, name, semester, subject, CONCAT(t.first_name, ' ', t.last_name) AS teacher FROM classroom c JOIN student_in_classroom sic on c.classroom_id = sic.ClassroomID JOIN teacher t ON t.teacher_id = c.teacher_id where sic.srn = '${SRN}';`;
+        const query = `select classroom_id AS classroomId, section, name, semester, subject, CONCAT(t.first_name, ' ', t.last_name) AS teacher from classroom c JOIN student_in_classroom sic on c.classroom_id = sic.ClassroomID JOIN teacher t ON t.teacher_id = c.teacher_id where sic.srn = '${SRN}';`;
 
         const results = await executeQuery(query);
         res.json(results);
@@ -282,8 +405,8 @@ app.post('/api/get-classrooms-for-student', async (req,res)=>{
 
 app.post('/api/get-classrooms-for-teacher', async (req,res)=>{
 
-    const query = `SELECT classroom_id AS classroomId, code, section, name, semester, subject FROM classroom WHERE teacher_id='${req.body.teacherId}';`; 
-    //SELECT classroom_id AS classroomId, code, section, name, semester, subject FROM classroom WHERE teacher_id="PESUT001";
+    const query = `select classroom_id AS classroomId, code, section, name, semester, subject from classroom where teacher_id='${req.body.teacherId}';`; 
+    //select classroom_id AS classroomId, code, section, name, semester, subject from classroom where teacher_id="PESUT001";
     
     try {
         
@@ -299,7 +422,7 @@ app.post('/api/get-classrooms-for-teacher', async (req,res)=>{
         // }
 
         // var SRN = SRNResults["data"][0]["SRN"];
-        // const query = `SELECT classroom_id AS classroomId, section, name, semester, subject, CONCAT(t.first_name, ' ', t.last_name) AS teacher FROM classroom c JOIN student_in_classroom sic on c.classroom_id = sic.ClassroomID JOIN teacher t ON t.teacher_id = c.teacher_id where sic.srn = '${SRN}';`;
+        // const query = `select classroom_id AS classroomId, section, name, semester, subject, CONCAT(t.first_name, ' ', t.last_name) AS teacher from classroom c JOIN student_in_classroom sic on c.classroom_id = sic.ClassroomID JOIN teacher t ON t.teacher_id = c.teacher_id where sic.srn = '${SRN}';`;
 
         const results = await executeQuery(query);
         res.json(results);
@@ -310,7 +433,7 @@ app.post('/api/get-classrooms-for-teacher', async (req,res)=>{
 });
 
 app.get('/api/get-srn', async (req,res)=>{
-    const query = `SELECT get_SRN_from_email('${req.body.email}') AS SRN;`;
+    const query = `select get_SRN_from_email('${req.body.email}') AS SRN;`;
 
     try {
         const results = await executeQuery(query);
@@ -322,7 +445,7 @@ app.get('/api/get-srn', async (req,res)=>{
 });
 
 app.get('/api/get-assignments-for-classroom', async (req,res)=>{
-    const query = `SELECT DISTINCT name, deadline, teacher_id FROM assignment WHERE classroom_id = ${req.body.classroomId};`;
+    const query = `select DISTINCT name, deadline, teacher_id from assignment where classroom_id = ${req.body.classroomId};`;
 
     try {
         const results = await executeQuery(query);
@@ -358,7 +481,7 @@ app.post('/api/get-tasks-for-assignment', async (req,res)=>{
 });
 
 app.post('/api/check-class-code', async (req,res)=>{
-    const query = `SELECT * FROM classroom WHERE code = '${req.body.classroomCode}' LIMIT 1;`;
+    const query = `select * from classroom where code = '${req.body.classroomCode}' LIMIT 1;`;
 
     try {
         const results = await executeQuery(query);
