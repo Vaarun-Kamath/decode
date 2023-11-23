@@ -1,8 +1,8 @@
 "use client"
 import React from "react";
 import { useEffect, useState } from "react";
-import Navbar from "../../../../components/Navbar";
-import CodeEditor from "../../../../components/CodeEditor";
+import Navbar from "../../../../../components/Navbar";
+import CodeEditor from "../../../../../components/CodeEditor";
 import { useSearchParams  } from "next/navigation";
 
 //* http://localhost:3000/classrooms/assignments/task?classroom=CLASSROOMID&task=TASKID is used to access this page, where ID is the ID of the Task
@@ -29,7 +29,9 @@ export default function Task() {
 		if (!response.ok) {
 			console.log("Error fetching classrooms. Please try again later.");
 		} else {
-			var results = await response.json();		
+			var results = await response.json();
+			console.log("resultsLLL: ",results)		
+			console.log("searchParams.get('task'): ",searchParams.get('task'))		
 			results = results['data'][0];
 
 			var needed_format = {

@@ -201,42 +201,52 @@ function createAssignment() {
 							<input onChange={handleDeadlineChange} type='datetime-local' min={`${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}T${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`} placeholder='Enter Assignment Deadline' className='outline-none rounded-sm bg-transparent border border-theme3 text-white p-2 h-10' />
 						</span>
 						<span className='flex w-full flex-col gap-1'>
-							
-							<button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" className="text-black bg-theme3 hover:bg-theme3 focus:outline-none focus:bg-white font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-theme3 dark:hover:bg-theme3 dark:focus:bg-theme3" type="button">Select Classroom
+							<button
+								id="dropdownDefaultButton"
+								onClick={() => {
+								const dropdown = document.getElementById('dropdown');
+								dropdown.classList.toggle('hidden');
+								}}
+								data-dropdown-toggle="dropdown"
+								className="text-black bg-theme3 hover:bg-theme3 focus:outline-none focus:bg-white font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-theme3 dark:hover:bg-theme3 dark:focus:bg-theme3"
+								type="button"
+							>
+								Select Classroom
 								<svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-									<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+								<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
 								</svg>
 							</button>
 
-							<div id="dropdown" className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-lg scrollbar-thumb-[#FFD369] absolute right-0 top-12 w-60 dark:bg-gray-700 dark:divide-gray-600">
+							<div id="dropdown" className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-lg scrollbar-thumb-[#FFD369] w-60 dark:bg-gray-700 dark:divide-gray-600">
 								<ul className="p-2 py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-									{console.log("Clroom: ",classrooms)}
-									{(()=>{
-										if(classrooms == null){
-											return <div>Loading...</div>
-										}else{
-											return(
-												classrooms.map((value,key)=>(
-													<li key={key}>
-														<div className="flex select-none p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-															<div className="flex items-center h-5">
-																<input onClick={event =>handleSelectClassroom(event,value.classroomId)} id="helper-checkbox-1" aria-describedby="helper-checkbox-text-1" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" />
-															</div>
-															<div className="ms-2 text-sm">
-																<label className="font-medium text-gray-900 dark:text-gray-300">
-																	<div>{value.name}</div>
-																	<p id="helper-checkbox-text-1" className="text-xs font-normal text-gray-500 dark:text-gray-300">{value.subject}</p>
-																</label>
-															</div>
-														</div>
-													</li>
-												))
-											);
-										}
-									})()}
+								{console.log("Clroom: ",classrooms)}
+								{(() => {
+									if (classrooms == null) {
+										return (<div>Loading...</div>)
+									} else {
+										return (
+											classrooms.map((value, key) => (
+											<li key={key}>
+												<div className="flex select-none p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+												<div className="flex items-center h-5">
+													<input onClick={event => handleSelectClassroom(event, value.classroomId)} id="helper-checkbox-1" aria-describedby="helper-checkbox-text-1" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" />
+												</div>
+												<div className="ms-2 text-sm">
+													<label className="font-medium text-gray-900 dark:text-gray-300">
+													<div>{value.name}</div>
+													<p id="helper-checkbox-text-1" className="text-xs font-normal text-gray-500 dark:text-gray-300">{value.subject}</p>
+													</label>
+												</div>
+												</div>
+											</li>
+											))
+										);
+									}
+								})()}
 								</ul>
 							</div>
-						</span>
+							</span>
+
 						<span className='flex w-full flex-row gap-1'>
 							<button className='bg-theme4 text-black w-fit p-3 rounded-sm' onClick={async () => {await handleAssignmentCreation()}}>Create Assignment</button>
 							<button className='bg-theme4 text-black w-fit p-3 rounded-sm' onClick={testButton}>Test Button</button>

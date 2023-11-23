@@ -469,7 +469,7 @@ app.post('/api/get-assignments-for-classroom', async (req,res)=>{
 });
 
 app.post('/api/get-tasks-for-assignment', async (req,res)=>{
-    const query = `SELECT questions, solutions, task_marks FROM task WHERE assignment_id = ${req.body.assignmentId};`;
+    const query = `SELECT task_id,questions, solutions, task_marks FROM task WHERE assignment_id = ${req.body.assignmentId};`;
 
     try {
         const results = await executeQuery(query);
@@ -479,6 +479,21 @@ app.post('/api/get-tasks-for-assignment', async (req,res)=>{
         handleServerError(res);
     }
 });
+
+app.post('/api/get-assignment-for-classroom', async (req,res)=>{
+    console.log(req.body)
+    const query = `SELECT assignment_id, name, deadline, teacher_id FROM assignment WHERE classroom_id = ${req.body.classroomId};`;
+
+    try {
+        const results = await executeQuery(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error in /api/get-tasks-for-assignment endpoint:", error);
+        handleServerError(res);
+    }
+});
+
+
 
 app.post('/api/check-class-code', async (req,res)=>{
     const query = `select * from classroom where code = '${req.body.classroomCode}' LIMIT 1;`;
